@@ -49,6 +49,12 @@ RUN apk add --update --no-cache autoconf g++ imagemagick-dev pcre-dev libtool ma
     && docker-php-ext-enable imagick \
     && apk del autoconf g++ libtool make pcre-dev
 
+# ssh2
+RUN apk add --update --no-cache autoconf g++ libtool make pcre-dev libssh2 libssh2-dev \
+    && pecl install ssh2-1 \
+    && docker-php-ext-enable ssh2 \
+    && apk del autoconf g++ libtool make pcre-dev
+
 # set recommended opcache PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
