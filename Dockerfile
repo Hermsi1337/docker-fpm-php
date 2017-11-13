@@ -35,6 +35,15 @@ RUN docker-php-source extract \
     && docker-php-ext-install redis \
     && docker-php-source delete
 
+# Memcached
+RUN apk add --no-cache libmemcached-dev zlib-dev cyrus-sasl-dev git \
+    && docker-php-source extract \
+    && git clone --branch php7 https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/ \
+    && docker-php-ext-configure memcached \
+    && docker-php-ext-install memcached \
+    && docker-php-source delete \
+    && apk del --no-cache zlib-dev cyrus-sasl-dev git
+
 # apcu
 RUN docker-php-source extract \
     && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
@@ -85,6 +94,6 @@ RUN sed -i -e 's/listen.*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.conf
 RUN echo "expose_php=0" > /usr/local/etc/php/php.ini
 
 # Clean up
-RUN rm -rf /tmp/*
+RUN rm -rf /tmp/* /var/cache/apk/*
 
 CMD ["php-fpm"]
