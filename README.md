@@ -10,6 +10,7 @@ Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in
 * mcrypt, gd, iconv
 * gmp
 * php-redis
+* memcached
 * opcache ([configuration reference](https://secure.php.net/manual/en/opcache.installation.php))
 * apcu ([configuration reference](https://secure.php.net/manual/en/apcu.configuration.php))
 * imagick
