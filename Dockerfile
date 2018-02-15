@@ -1,6 +1,6 @@
 FROM	php:fpm-alpine
 
-LABEL	maintainer "https://github.com/hermsi1337"
+LABEL	maintainer ="https://github.com/hermsi1337"
 
 # intl, zip, soap
 RUN apk add --update --no-cache libintl icu icu-dev libxml2-dev \
@@ -25,7 +25,7 @@ RUN apk add --update --no-cache gmp gmp-dev \
     && docker-php-ext-install gmp
 
 # php-redis
-ENV PHPREDIS_VERSION="3.1.4"
+ENV PHPREDIS_VERSION="3.1.6"
 
 RUN docker-php-source extract \
     && curl -L -o /tmp/redis.tar.gz "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz" \
