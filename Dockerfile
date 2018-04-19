@@ -1,4 +1,4 @@
-FROM	php:fpm-alpine
+FROM	php:7.1-fpm-alpine
 
 LABEL	maintainer ="https://github.com/hermsi1337"
 
@@ -10,13 +10,13 @@ RUN apk add --update --no-cache libintl icu icu-dev libxml2-dev \
 RUN apk add --update --no-cache postgresql-dev \
     && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql
 
-# gd, iconv
+# mcrypt, gd, iconv
 RUN apk add --update --no-cache \
         freetype-dev \
         libjpeg-turbo-dev \
         libmcrypt-dev \
         libpng-dev \
-    && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" iconv \
+    && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" iconv mcrypt \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
 
