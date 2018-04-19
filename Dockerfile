@@ -3,72 +3,81 @@ FROM	php:fpm-alpine
 LABEL	maintainer="https://github.com/hermsi1337"
 
 # Upgrade stuff
-RUN apk upgrade
+RUN apk update && \
+    apk upgrade
 
-# Install tini
-RUN apk add --update --no-cache tini
+# Install build dependencies
+RUN docker-php-source extract           \
+    && apk add --no-cache               \
+        --virtual .build-dependencies   \
+            $PHPIZE_DEPS                \
+            zlib-dev                    \
+            cyrus-sasl-dev              \
+            git                         \
+            autoconf                    \
+            g++                         \
+            libtool                     \
+            make                        \
+            pcre-dev
+
+# Install additional stuff needed for modules
+RUN apk add --no-cache      \
+        tini                \
+        libintl             \
+        icu                 \
+        icu-dev             \
+        libxml2-dev         \
+        postgresql-dev      \
+        freetype-dev        \
+        libjpeg-turbo-dev   \
+        libmcrypt-dev       \
+        libpng-dev          \
+        gmp                 \
+        gmp-dev             \
+        libmemcached-dev    \
+        imagemagick-dev     \
+        libssh2             \
+        libssh2-dev
 
 # intl, zip, soap
-RUN apk add --update --no-cache libintl icu icu-dev libxml2-dev \
-    && docker-php-ext-install intl zip soap
+RUN docker-php-ext-install intl zip soap
 
 # mysqli, pdo, pdo_mysql, pdo_pgsql
-RUN apk add --update --no-cache postgresql-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql
+RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql
 
 # gd, iconv
-RUN apk add --update --no-cache \
-        freetype-dev \
-        libjpeg-turbo-dev \
-        libmcrypt-dev \
-        libpng-dev \
-    && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" iconv \
+RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" iconv \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
 
 # gmp
-RUN apk add --update --no-cache gmp gmp-dev \
-    && docker-php-ext-install gmp
+RUN docker-php-ext-install gmp
 
 # php-redis
-ENV PHPREDIS_VERSION="3.1.6"
+ENV PHPREDIS_VERSION="4.0.1"
 
-RUN docker-php-source extract \
-    && curl -L -o /tmp/redis.tar.gz "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz" \
+RUN curl -L -o /tmp/redis.tar.gz "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz" \
     && tar xfz /tmp/redis.tar.gz \
     && rm -r /tmp/redis.tar.gz \
     && mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis \
-    && docker-php-ext-install redis \
-    && docker-php-source delete
+    && docker-php-ext-install redis
 
 # Memcached
-RUN apk add --no-cache libmemcached-dev zlib-dev cyrus-sasl-dev git \
-    && docker-php-source extract \
-    && git clone --branch php7 https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/ \
+RUN git clone --branch php7 https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/ \
     && docker-php-ext-configure memcached \
-    && docker-php-ext-install memcached \
-    && docker-php-source delete \
-    && apk del --no-cache zlib-dev cyrus-sasl-dev git
+    && docker-php-ext-install memcached
 
 # apcu
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install apcu \
-    && docker-php-ext-enable apcu \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+RUN pecl install apcu \
+    && docker-php-ext-enable apcu
 
 # imagick
-RUN apk add --update --no-cache autoconf g++ imagemagick-dev pcre-dev libtool make \
-    && pecl install imagick \
-    && docker-php-ext-enable imagick \
-    && apk del autoconf g++ libtool make pcre-dev
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick
 
 # ssh2
-RUN apk add --update --no-cache autoconf g++ libtool make pcre-dev libssh2 libssh2-dev \
-    && pecl install ssh2-1 \
-    && docker-php-ext-enable ssh2 \
-    && apk del autoconf g++ libtool make pcre-dev
+RUN pecl install ssh2-1 \
+    && docker-php-ext-enable ssh2
 
 # set recommended opcache PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
@@ -100,6 +109,8 @@ RUN sed -i -e 's/listen.*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.conf
 RUN echo "expose_php=0" > /usr/local/etc/php/php.ini
 
 # Clean up
-RUN rm -rf /tmp/* /var/cache/apk/*
+RUN apk del .build-dependencies \
+    && docker-php-source delete \
+    && rm -rf /tmp/* /var/cache/apk/*
 
 CMD ["php-fpm"]
