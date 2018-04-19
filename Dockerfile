@@ -1,9 +1,12 @@
 FROM	php:7.1-fpm-alpine
 
-LABEL	maintainer ="https://github.com/hermsi1337"
+LABEL	maintainer="https://github.com/hermsi1337"
 
-# update stuff and install tini
-RUN apk upgrade && apk add --update --no-cache tini
+# Upgrade stuff
+RUN apk upgrade
+
+# Install tini
+RUN apk add --update --no-cache tini
 
 # intl, zip, soap
 RUN apk add --update --no-cache libintl icu icu-dev libxml2-dev \
