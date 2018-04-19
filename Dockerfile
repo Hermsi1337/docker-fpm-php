@@ -1,4 +1,4 @@
-FROM	php:7.2-fpm-alpine
+FROM	php:fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
