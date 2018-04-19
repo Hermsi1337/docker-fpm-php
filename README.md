@@ -1,10 +1,10 @@
-## Make your FPM-PHP fly on Alpine
+# Make your FPM-PHP fly on Alpine
 
-### Overview
+## Overview
 This is a Dockerfile/image to build a container for FPM-PHP.
 Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).<br>
 
-### Features
+## Features
 * intl, zip, soap
 * mysqli, pdo, pdo_mysql, pdo_pgsql
 * mcrypt, gd, iconv
@@ -16,6 +16,10 @@ Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in
 * imagick
 * ssh2
 
-### Basic Usage
+## Basic Usage
 This Image is intended to be used along with an external webserver container like apache or nginx.
 I personally prefer nginx over apache. If you are interested in how to setup nginx along with this fpm-php image, take a look at [my docker-compose files](https://github.com/Hermsi1337/docker-compose/blob/master/full_php_dev_stack/docker-compose.yml).
+
+## Tags
+* `7.2`, `latest`
+* `7.1`

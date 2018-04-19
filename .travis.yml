@@ -1,0 +1,14 @@
+sudo: required
+language: bash
+
+services:
+  - docker
+
+after_success:
+      - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+      - export CURRENT_REPO="alpine-fpm-php"
+      - export REPO="${DOCKER_USER}/${CURRENT_REPO}"
+      - export TAG=$(if [ "${TRAVIS_BRANCH}" == "master" ]; then echo "latest"; else echo ${TRAVIS_BRANCH} ; fi)
+      - export IMAGE="${REPO}:${TAG}"
+      - docker build --pull -t "${IMAGE}" .
+      - docker push "${IMAGE}"
