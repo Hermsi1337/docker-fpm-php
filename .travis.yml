@@ -1,12 +1,8 @@
-sudo: true
-dist: alpine
+sudo: required
 language: bash
 
 services:
   - docker
-
-install:
-  - apk update && apk upgrade
 
 after_success:
       - docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
