@@ -1,10 +1,14 @@
 sudo: true
 dist: alpine
+language: bash
 
-jobs:
-  include:
-    - stage: build docker image
-      script:
+services:
+  - docker
+
+install:
+  - apk update && apk upgrade
+
+after_success:
       - docker login -e "${DOCKER_EMAIL}" -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
       - export CURRENT_REPO="alpine-fpm-php"
       - export REPO="${DOCKER_USER}/${CURRENT_REPO}"
