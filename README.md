@@ -1,4 +1,4 @@
-# Make your FPM-PHP fly on Alpine
+# Make your FPM-PHP fly on Alpine 
 
 ## Overview
 This is a Dockerfile/image to build a container for FPM-PHP.
@@ -23,3 +23,6 @@ I personally prefer nginx over apache. If you are interested in how to setup ngi
 ## Tags
 * `7.2`, `latest`
 * `7.1`
+
+### Pushed to Dockerhub by Travis-CI 
+[![Build Status](https://travis-ci.org/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.org/Hermsi1337/docker-fpm-php)
