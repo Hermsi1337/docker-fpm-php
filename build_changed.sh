@@ -32,7 +32,7 @@ for VERSION in ${VERSIONS}; do
 
             echo ""
             echo "Because we're on master this ain't no PR."
-            echo "Therefore pushing stuff to Dockerhub"
+            echo "Therefore pushing stuff to Docker Hub"
             echo ""
 
             docker tag "${TMP_IMAGE}" "${RELEASE_IMAGE}"
