@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 BASE_DIR="${PWD}"
 CHANGED_FILES=$(git diff HEAD~ --name-only)
 VERSIONS=$(find . -maxdepth 1 -mindepth 1 -not -path '*/\.*' -type d | cut -d '/' -f 2)
