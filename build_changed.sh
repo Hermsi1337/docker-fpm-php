@@ -26,14 +26,12 @@ for VERSION in ${VERSIONS}; do
         TMP_IMAGE_TAG="${TRAVIS_BRANCH}-${RELEASE_TAG}"
         TMP_IMAGE="${IMAGE_NAME}:${TMP_IMAGE_TAG}"
 
-        #docker build --pull -t "${TMP_IMAGE}" .
-        echo "build tmp img"
+        docker build --pull -t "${TMP_IMAGE}" .
 
         if [[ "${TRAVIS_BRANCH}" == "master" ]]; then
 
-            #docker tag "${TMP_IMAGE}" "${RELEASE_IMAGE}"
-            #docker push "${RELEASE_IMAGE}"
-            echo "build and push live img"
+            docker tag "${TMP_IMAGE}" "${RELEASE_IMAGE}"
+            docker push "${RELEASE_IMAGE}"
 
         fi
 
