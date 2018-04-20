@@ -37,7 +37,9 @@ RUN apk add --no-cache      \
         libmemcached-dev    \
         imagemagick-dev     \
         libssh2             \
-        libssh2-dev
+        libssh2-dev         \
+        libxslt-dev         \
+        libmcrypt-dev
 
 # Download source code for redis
 ENV PHPREDIS_VERSION="4.0.1"
@@ -59,6 +61,9 @@ RUN docker-php-ext-configure gd         \
 
 RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         intl                                                \
+        bcmath                                              \
+        mcrypt                                              \
+        xsl                                                 \
         zip                                                 \
         soap                                                \
         mysqli                                              \
