@@ -13,7 +13,9 @@ for VERSION in ${VERSIONS}; do
 
     if [[ $(echo "${CHANGED_FILES}" | grep "${VERSION}") ]]; then
 
+        echo ""
         echo "Building ${VERSION%%/} ..."
+        echo ""
 
         VERSION_DIR="${BASE_DIR}/${VERSION}"
         cd ${VERSION_DIR}
@@ -27,6 +29,11 @@ for VERSION in ${VERSIONS}; do
         docker build --pull -t "${TMP_IMAGE}" .
 
         if [[ "${TRAVIS_BRANCH}" == "master" ]]; then
+
+            echo ""
+            echo "Because we're on master this ain't no PR."
+            echo "Therefore pushing stuff to Dockerhub"
+            echo ""
 
             docker tag "${TMP_IMAGE}" "${RELEASE_IMAGE}"
             docker push "${RELEASE_IMAGE}"
