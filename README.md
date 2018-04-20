@@ -2,7 +2,7 @@
 
 ## Overview
 This is a Dockerfile/image to build a container for FPM-PHP.
-Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).<br>
+Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).
 
 ## Features
 * intl
