@@ -4,7 +4,7 @@ set -xe
 
 BASE_DIR="${PWD}"
 CHANGED_FILES=$(git diff HEAD~ --name-only)
-VERSIONS=$(find "${BASE_DIR}" -not -path '*/\.*' -maxdepth 1 -mindepth 1 -type d | cut -d '/' -f 2)
+VERSIONS=$(find . -not -path '*/\.*' -maxdepth 1 -mindepth 1 -type d | cut -d '/' -f 2)
 
 echo ""
 echo "Changed files in current commit:"
