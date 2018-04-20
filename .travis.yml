@@ -1,14 +1,22 @@
 sudo: required
 language: bash
 
+branches:
+  only:
+  - master
+
 services:
   - docker
 
-after_success:
-      - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
-      - export CURRENT_REPO="alpine-fpm-php"
-      - export REPO="${DOCKER_USER}/${CURRENT_REPO}"
-      - export TAG=$(if [ "${TRAVIS_BRANCH}" == "master" ]; then echo "latest"; else echo ${TRAVIS_BRANCH} ; fi)
-      - export IMAGE="${REPO}:${TAG}"
-      - docker build --pull -t "${IMAGE}" .
-      - docker push "${IMAGE}"
+env:
+  global:
+    - IMAGE="alpine-fpm-php""
+    - IMAGE_NAME="${DOCKER_USER}/${IMAGE}"
+
+before_script:
+  - sudo apt-get update
+  - sudo apt-get upgrade -y
+  - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
+
+script:
+  - bash ./build_changed.sh
