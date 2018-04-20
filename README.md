@@ -24,5 +24,5 @@ I personally prefer nginx over apache. If you are interested in how to setup ngi
 * `7.2`, `latest`
 * `7.1`
 
-### Pushed to Dockerhub by Travis-CI 
+### Pushed to Docker Hub by Travis-CI
 [![Build Status](https://travis-ci.org/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.org/Hermsi1337/docker-fpm-php)
