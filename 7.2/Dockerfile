@@ -37,7 +37,8 @@ RUN apk add --no-cache      \
         libmemcached-dev    \
         imagemagick-dev     \
         libssh2             \
-        libssh2-dev
+        libssh2-dev         \
+        libxslt-dev
 
 # Download source code for redis
 ENV PHPREDIS_VERSION="4.0.1"
@@ -58,6 +59,7 @@ RUN docker-php-ext-configure gd         \
     --with-jpeg-dir=/usr/include/
 
 RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
+        bcmath                                              \
         intl                                                \
         zip                                                 \
         soap                                                \
@@ -69,7 +71,8 @@ RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         redis                                               \
         iconv                                               \
         gd                                                  \
-        memcached
+        memcached                                           \
+        xsl
 
 # Install PECL extensions
 RUN pecl install                \
@@ -79,7 +82,7 @@ RUN pecl install                \
 
 # set recommended opcache PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
-COPY conf.d/00-opcache-recommended.ini /usr/local/etc/php/conf.d/00-opcache-recommended.ini
+COPY    conf.d/00-opcache-recommended.ini /usr/local/etc/php/conf.d/00-opcache-recommended.ini
 
 # set recommended apcu PHP.ini settings
 # see https://secure.php.net/manual/en/apcu.configuration.php
