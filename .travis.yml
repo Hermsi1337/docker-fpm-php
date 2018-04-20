@@ -14,8 +14,8 @@ env:
     - IMAGE_NAME="${DOCKER_USER}/${IMAGE}"
 
 before_script:
-  - sudo apt-get update
-  - sudo apt-get upgrade -y
+  - sudo apt-get -qq update
+  - sudo apt-get -qq upgrade -y
   - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 script:
