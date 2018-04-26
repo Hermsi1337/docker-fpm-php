@@ -24,6 +24,7 @@ Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in
 * apcu ([configuration reference](https://secure.php.net/manual/en/apcu.configuration.php))
 * imagick
 * ssh2
+* ioncube
 * mcrypt (< 7.2)
 
 ## Basic Usage
