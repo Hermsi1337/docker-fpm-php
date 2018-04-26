@@ -1,4 +1,6 @@
-FROM	php:7.1-fpm-alpine
+ARG     PHP_VERSION=7.1
+
+FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
@@ -47,7 +49,6 @@ ENV PHPREDIS_VERSION="4.0.1"
 RUN curl -L -o /tmp/redis.tar.gz                                                \
     "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz"   \
     && tar xfz /tmp/redis.tar.gz                                                \
-    && rm -r /tmp/redis.tar.gz                                                  \
     && mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis
 
 # Download sources for memcached
@@ -76,18 +77,30 @@ RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         gd                                                  \
         memcached
 
+# Install ioncube
+ADD http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+
+RUN tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/ && \
+    mkdir -p /usr/local/php/ext/ioncube && \
+    cp /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so /usr/local/php/ext/ioncube/.
+
+COPY    conf.d/00-ioncube.ini /usr/local/etc/php/conf.d/00-ioncube.ini
+
+# Install opcache
+RUN docker-php-ext-configure opcache --enable-opcache && \
+    docker-php-ext-install opcache
+## set recommended opcache PHP.ini settings
+## see https://secure.php.net/manual/en/opcache.installation.php
+COPY conf.d/00-opcache-recommended.ini /usr/local/etc/php/conf.d/00-opcache-recommended.ini
+
 # Install PECL extensions
 RUN pecl install                \
         apcu imagick ssh2-1     \
     && docker-php-ext-enable    \
         apcu imagick ssh2
 
-# set recommended opcache PHP.ini settings
-# see https://secure.php.net/manual/en/opcache.installation.php
-COPY conf.d/00-opcache-recommended.ini /usr/local/etc/php/conf.d/00-opcache-recommended.ini
-
-# set recommended apcu PHP.ini settings
-# see https://secure.php.net/manual/en/apcu.configuration.php
+## set recommended apcu PHP.ini settings
+## see https://secure.php.net/manual/en/apcu.configuration.php
 COPY    conf.d/00-apcu-recommended.ini /usr/local/etc/php/conf.d/00-apcu-recommended.ini
 
 RUN sed -i -e 's/listen.*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.conf

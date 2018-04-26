@@ -1,4 +1,6 @@
-FROM	php:7.2-fpm-alpine
+ARG     PHP_VERSION=7.2
+
+FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
@@ -73,6 +75,22 @@ RUN docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
         gd                                                  \
         memcached                                           \
         xsl
+
+# Install ioncube
+ADD http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+
+RUN tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/ && \
+    mkdir -p /usr/local/php/ext/ioncube && \
+    cp /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so /usr/local/php/ext/ioncube/.
+
+COPY    conf.d/00-ioncube.ini /usr/local/etc/php/conf.d/00-ioncube.ini
+
+# Install opcache
+RUN docker-php-ext-configure opcache --enable-opcache && \
+    docker-php-ext-install opcache
+## set recommended opcache PHP.ini settings
+## see https://secure.php.net/manual/en/opcache.installation.php
+COPY conf.d/00-opcache-recommended.ini /usr/local/etc/php/conf.d/00-opcache-recommended.ini
 
 # Install PECL extensions
 RUN pecl install                \
