@@ -52,7 +52,7 @@ RUN curl -L -o /tmp/redis.tar.gz                                                
     && mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis
 
 # Download sources for memcached
-RUN git clone --branch php7 https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/  \
+RUN git clone https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/  \
     && docker-php-ext-configure memcached
 
 # Configure gd
