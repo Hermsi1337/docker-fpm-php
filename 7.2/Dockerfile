@@ -43,7 +43,7 @@ RUN apk add --no-cache      \
         libxslt-dev
 
 # Download source code for redis
-ENV PHPREDIS_VERSION="4.0.9"
+ENV PHPREDIS_VERSION="4.0.2"
 
 RUN curl -L -o /tmp/redis.tar.gz                                                \
     "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz"   \
