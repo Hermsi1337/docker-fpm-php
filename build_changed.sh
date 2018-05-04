@@ -30,7 +30,7 @@ for VERSION in ${VERSIONS}; do
 
         docker build --pull -t "${TMP_IMAGE}" .
 
-        if [[ "${TRAVIS_BRANCH}" == "master" ]]; then
+        if [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
             echo ""
             echo "Because we're on master this ain't no PR."
