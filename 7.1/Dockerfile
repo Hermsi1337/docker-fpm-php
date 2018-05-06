@@ -54,7 +54,7 @@ RUN     apk update                       && \
             libxslt-dev                     \
             libmcrypt-dev                && \
         \
-        tar xfz /tmp/${PHPREDIS_VERSION}   && \
+        tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
         mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis    && \
         \
