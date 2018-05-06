@@ -36,7 +36,6 @@ RUN     apk update                       && \
             postgresql-dev                  \
             freetype-dev                    \
             libjpeg-turbo-dev               \
-            libmcrypt-dev                   \
             libpng-dev                      \
             gmp                             \
             gmp-dev                         \
@@ -61,7 +60,6 @@ RUN     apk update                       && \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
             intl                                                \
             bcmath                                              \
-            mcrypt                                              \
             xsl                                                 \
             zip                                                 \
             soap                                                \
