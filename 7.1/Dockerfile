@@ -7,6 +7,7 @@ LABEL	maintainer="https://github.com/hermsi1337"
 ENV     PHPREDIS_VERSION="4.0.2"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 # set recommended PHP.ini settings
 # https://secure.php.net/manual/en/opcache.installation.php
@@ -53,10 +54,7 @@ RUN     apk update                       && \
             libxslt-dev                     \
             libmcrypt-dev                && \
         \
-        curl -L -o /tmp/redis.tar.gz        \
-            "https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz"   && \
-        \
-        tar xfz /tmp/redis.tar.gz   && \
+        tar xfz /tmp/${PHPREDIS_VERSION}   && \
         \
         mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis    && \
         \
