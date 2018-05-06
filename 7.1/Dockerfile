@@ -9,13 +9,6 @@ ENV     PHPREDIS_VERSION="4.0.2"
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
-# set recommended PHP.ini settings
-# https://secure.php.net/manual/en/opcache.installation.php
-# https://secure.php.net/manual/en/apcu.configuration.php
-# also, enable ioncube
-COPY    conf.d/* /usr/local/etc/php/conf.d/
-
-# Upgrade stuff
 RUN     apk update                       && \
         \
         apk upgrade                      && \
@@ -109,5 +102,11 @@ RUN     apk update                       && \
         docker-php-source delete                                    &&  \
         \
         rm -rf /tmp/* /var/cache/apk/*
+
+# set recommended PHP.ini settings
+# https://secure.php.net/manual/en/opcache.installation.php
+# https://secure.php.net/manual/en/apcu.configuration.php
+# also, enable ioncube
+COPY    conf.d/* /usr/local/etc/php/conf.d/
 
 CMD     ["php-fpm"]
