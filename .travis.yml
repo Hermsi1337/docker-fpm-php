@@ -10,7 +10,7 @@ services:
 
 env:
   global:
-    - IMAGE="alpine-fpm-php""
+    - IMAGE="alpine-fpm-php"
     - IMAGE_NAME="${DOCKER_USER}/${IMAGE}"
 
 before_script:
