@@ -15,7 +15,7 @@ env:
 
 before_script:
   - sudo apt-get -qq update
-  - sudo apt-get -qq upgrade -y
+  - sudo apt-get -qq upgrade
   - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 script:
