@@ -98,7 +98,6 @@ RUN     apk update                       && \
 # set recommended PHP.ini settings
 # https://secure.php.net/manual/en/opcache.installation.php
 # https://secure.php.net/manual/en/apcu.configuration.php
-# also, enable ioncube
 COPY    conf.d/* /usr/local/etc/php/conf.d/
 
 CMD     ["php-fpm"]
