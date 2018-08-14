@@ -4,7 +4,7 @@ FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ENV     PHPREDIS_VERSION="4.0.2"
+ENV     PHPREDIS_VERSION="4.1.1"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
