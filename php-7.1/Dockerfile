@@ -1,10 +1,10 @@
-ARG     PHP_VERSION=7.1
-
+ARG     PHP_VERSION="${PHP_VERSION:-7.1.20}"
 FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ENV     PHPREDIS_VERSION="4.1.1"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-4.1.1}"
+ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/

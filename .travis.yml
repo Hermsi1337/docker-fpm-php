@@ -1,12 +1,11 @@
 sudo: required
+
 language: bash
 
-branches:
-  only:
-  - master
-
-services:
-  - docker
+addons:
+  apt:
+    packages:
+      - docker-ce
 
 env:
   global:
@@ -14,11 +13,9 @@ env:
     - IMAGE_NAME="${DOCKER_USER}/${IMAGE}"
 
 before_script:
-  - sudo apt-get -qq update
-  - sudo apt-get -qq upgrade
-  - sudo sysctl -w net.ipv4.ip_forward=1
+  - sudo sysctl -w net.ipv4.ip_forward=1 
   - docker login -u "${DOCKER_USER}" -p "${DOCKER_PASSWORD}"
 
 script:
   - find . -name "*.sh" -print0 | xargs -0 -r -n1 bash -n
-  - bash ./build_changed.sh
+  - bash ./build-images.sh
