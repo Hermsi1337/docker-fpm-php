@@ -22,8 +22,8 @@ docker_push() {
     unset IMAGE
     IMAGE="${1}"
 
-    echo "# Tag: ${IMAGE##*:}"
-    docker push "${IMAGE}"
+    echo "# Pushing tag: ${IMAGE##*:}"
+    docker push "${IMAGE}" 1>/dev/null
 }
 
 if [[ "${#CHANGED_DIRECTORIES[@]}" -eq 0 ]] || [[ "${CHANGED_DIRECTORIES[@]}" == *"conf.d"* ]] ; then
