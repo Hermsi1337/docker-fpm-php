@@ -17,6 +17,15 @@ exact_version() {
 
 }
 
+docker_push() {
+
+    unset IMAGE
+    IMAGE="${1}"
+
+    echo "# Tag: ${IMAGE##*:}"
+    docker push "${IMAGE}"
+}
+
 if [[ "${#CHANGED_DIRECTORIES[@]}" -eq 0 ]] || [[ "${CHANGED_DIRECTORIES[@]}" == *"conf.d"* ]] ; then
     TO_BUILD=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" | sed -e 's#.*\/\(\)#\1#' | sort))
 else
@@ -24,10 +33,6 @@ else
 fi
 
 for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
-
-    echo "# # # # # # # # # # # # # # # #"
-    echo "Building ${PHP_VERSION_DIR}"
-    echo "# # # # # # # # # # # # # # # #"
 
     unset FULL_PHP_VERSION_PATH
     FULL_PHP_VERSION_PATH="${TRAVIS_BUILD_DIR}/${PHP_VERSION_DIR}"
@@ -46,6 +51,9 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     unset PHPREDIS_VERSION
     PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
+
+    echo "# # # # # # # # # # # # # # # # # #"
+    echo "# Building: ${PHP_VERSION_DIR}"
 
     docker build \
         --quiet \
@@ -66,5 +74,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
         docker push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}"
 
     fi
+
+    echo "# # # # # # # # # # # # # # # # # #"
 
 done
