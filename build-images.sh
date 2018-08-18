@@ -5,7 +5,9 @@ set -e
 CURRENT="7.2"
 
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
-CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d" | sort))
+CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
+
+BUILD_ALL_REGEX=".*conf.d.*\|.*build-images.sh.*"
 
 exact_version() {
 
@@ -26,7 +28,7 @@ docker_push() {
     docker push "${IMAGE}" 1>/dev/null
 }
 
-if [[ "${#CHANGED_DIRECTORIES[@]}" -eq 0 ]] || [[ "${CHANGED_DIRECTORIES[@]}" == *"conf.d"* ]] ; then
+if [[ "${#CHANGED_DIRECTORIES[@]}" -eq 0 ]] || [[ $( echo "${CHANGED_DIRECTORIES[@]}" | grep -e "${BUILD_ALL_REGEX}" ) ]]; then
     TO_BUILD=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" | sed -e 's#.*\/\(\)#\1#' | sort))
 else
     TO_BUILD=(${CHANGED_DIRECTORIES})
