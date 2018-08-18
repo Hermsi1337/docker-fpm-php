@@ -1,10 +1,10 @@
-ARG     PHP_VERSION=7.0
-
+ARG     PHP_VERSION="${PHP_VERSION:-7.2.8}"
 FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ENV     PHPREDIS_VERSION="4.1.1"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-4.1.1}"
+ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
@@ -36,7 +36,6 @@ RUN     apk update                       && \
             postgresql-dev                  \
             freetype-dev                    \
             libjpeg-turbo-dev               \
-            libmcrypt-dev                   \
             libpng-dev                      \
             gmp                             \
             gmp-dev                         \
@@ -44,8 +43,7 @@ RUN     apk update                       && \
             imagemagick-dev                 \
             libssh2                         \
             libssh2-dev                     \
-            libxslt-dev                     \
-            libmcrypt-dev                && \
+            libxslt-dev                  && \
         \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
@@ -62,7 +60,6 @@ RUN     apk update                       && \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
             intl                                                \
             bcmath                                              \
-            mcrypt                                              \
             xsl                                                 \
             zip                                                 \
             soap                                                \
@@ -106,6 +103,7 @@ RUN     apk update                       && \
 # set recommended PHP.ini settings
 # https://secure.php.net/manual/en/opcache.installation.php
 # https://secure.php.net/manual/en/apcu.configuration.php
+# also, enable ioncube
 COPY    conf.d/* /usr/local/etc/php/conf.d/
 
 CMD     ["php-fpm"]
