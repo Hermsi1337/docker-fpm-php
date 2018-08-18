@@ -69,9 +69,9 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     if [[ "${TRAVIS_BRANCH}" == "master" ]] && [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
-        [[ "${MINOR_RELEASE_TAG}" == "${CURRENT}" ]] && docker push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}"
-        docker push "${IMAGE_NAME}:${MINOR_RELEASE_TAG}"
-        docker push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${CURRENT}" ]] && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}"
+        docker_push "${IMAGE_NAME}:${MINOR_RELEASE_TAG}"
+        docker_push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}"
 
     fi
 
