@@ -35,9 +35,8 @@ else
 fi
 
 echo "# # # # # # # # # # # # # # # # # # # # # # # # #"
-echo "We're building the following realeases now:"
-echo "${TO_BUILD[@]}"
-echo ""
+echo "# We're building the following realeases now:"
+echo "# ${TO_BUILD[@]}"
 
 for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
