@@ -34,6 +34,11 @@ else
     TO_BUILD=(${CHANGED_DIRECTORIES})
 fi
 
+echo "# # # # # # # # # # # # # # # # # # # # # # # # #"
+echo "We're building the following realeases now:"
+echo "${TO_BUILD[@]}"
+echo ""
+
 for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     unset FULL_PHP_VERSION_PATH
@@ -80,3 +85,5 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     echo "# # # # # # # # # # # # # # # # # #"
 
 done
+
+echo "# # # # # # # # # # # # # # # # # # # # # # # # #"
