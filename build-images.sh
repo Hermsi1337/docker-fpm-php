@@ -48,6 +48,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
 
     docker build \
+        --quiet \
         --no-cache \
         --pull \
         --build-arg PHP_VERSION="${PATCH_RELEASE_TAG}" \
