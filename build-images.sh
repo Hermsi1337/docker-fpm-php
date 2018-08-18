@@ -27,7 +27,7 @@ for PHP_VERSION_DIR in php-*; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    PATCH_RELEASE_TAG="${exact_version PHP ${VERSION_FILE}}"
+    PATCH_RELEASE_TAG="$(exact_version PHP ${VERSION_FILE})"
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
