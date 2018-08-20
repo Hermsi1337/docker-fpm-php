@@ -81,8 +81,6 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     fi
 
-    echo "# # # # # # # # # # # # # # # # # #"
-
 done
 
 echo "# # # # # # # # # # # # # # # # # # # # # # # # #"
