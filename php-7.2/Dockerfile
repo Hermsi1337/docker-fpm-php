@@ -90,8 +90,6 @@ RUN     apk update                       && \
         docker-php-ext-enable                                           \
             apcu imagick ssh2                                       &&  \
         \
-        sed -i -e 's/listen.*/listen = 0.0.0.0:9000/' /usr/local/etc/php-fpm.conf   &&  \
-        \
         echo "expose_php=0" > /usr/local/etc/php/php.ini            &&  \
         \
         apk del .build-dependencies                                 &&  \
