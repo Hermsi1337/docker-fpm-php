@@ -8,8 +8,8 @@ This is a Dockerfile/image to build a container for FPM-PHP.
 Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).
 
 ## Tags
-* `7.2.8`, `7.2`, `7`
-* `7.1.20`, `7.1`
+* `7.2.10`, `7.2`, `7`
+* `7.1.22`, `7.1`
 * `7.0.31`, `7.0`
 
 ## Features
