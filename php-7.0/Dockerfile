@@ -88,7 +88,7 @@ RUN     apk update                       && \
         docker-php-ext-install opcache                              &&  \
         \
         pecl install                                                    \
-            apcu imagick ssh2-1                                     &&  \
+            apcu imagick ssh2-1.1.2                                 &&  \
         \
         docker-php-ext-enable                                           \
             apcu imagick ssh2                                       &&  \
