@@ -8,9 +8,10 @@ This is a Dockerfile/image to build a container for FPM-PHP.
 Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).
 
 ## Tags
-* `7.2.10`, `7.2.8`, `7.2`, `7`
-* `7.1.22`, `7.1.20`, `7.1`
-* `7.0.31`, `7.0`
+* `7.3.0RC5`, `7.3`, `latest`
+* `7.2.12`, `7.2.10`, `7.2.8`, `7.2`, `7`, `stable`
+* `7.1.23`, `7.1.22`, `7.1.20`, `7.1`
+* `7.0.32`, `7.0.31`, `7.0`
 
 ## Features
 * intl
@@ -31,7 +32,7 @@ Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in
 * opcache ([configuration reference](https://secure.php.net/manual/en/opcache.installation.php))
 * apcu ([configuration reference](https://secure.php.net/manual/en/apcu.configuration.php))
 * imagick
-* ssh2
+* ssh2 (< 7.3)
 * ioncube
 * mcrypt (< 7.2)
 
