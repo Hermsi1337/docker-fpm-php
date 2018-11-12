@@ -2,7 +2,8 @@
 
 set -e
 
-CURRENT="7.2"
+LATEST="7.3"
+STABLE="7.2"
 
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
 CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
@@ -14,7 +15,7 @@ exact_version() {
     unset APP
     APP="${1}"
     FILE="${2}"
-    
+
     grep -i "${APP}" "${FILE}" | cut -d '=' -f 2
 
 }
@@ -55,6 +56,12 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     unset MAJOR_RELEASE_TAG
     MAJOR_RELEASE_TAG="${MINOR_RELEASE_TAG%.*}"
 
+    unset STABLE_RELEASE_TAG
+    STABLE_RELEASE_TAG="stable"
+
+    unset LATEST_RELEASE_TAG
+    LATEST_RELEASE_TAG="latest"
+
     unset PHPREDIS_VERSION
     PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
 
@@ -67,6 +74,8 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
         --pull \
         --build-arg PHP_VERSION="${PATCH_RELEASE_TAG}" \
         --build-arg PHPREDIS_VERSION="${PHPREDIS_VERSION}" \
+        --tag "${IMAGE_NAME}:${LATEST_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${STABLE_RELEASE_TAG}" \
         --tag "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}" \
         --tag "${IMAGE_NAME}:${MINOR_RELEASE_TAG}" \
         --tag "${IMAGE_NAME}:${PATCH_RELEASE_TAG}" \
@@ -75,7 +84,9 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     if [[ "${TRAVIS_BRANCH}" == "master" ]] && [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
-        [[ "${MINOR_RELEASE_TAG}" == "${CURRENT}" ]] && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${LATEST}" ]] && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}"
         docker_push "${IMAGE_NAME}:${MINOR_RELEASE_TAG}"
         docker_push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}"
 
