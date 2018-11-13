@@ -6,6 +6,7 @@ LABEL	maintainer="https://github.com/hermsi1337"
 ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-4.1.1}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
+ADD     https://www.ioncube.com/php-7.3.0-beta-loaders/ioncube_loaders_lin_x86-64_7.3_BETA.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 RUN     apk update                       && \
@@ -73,6 +74,13 @@ RUN     apk update                       && \
             gd                                                  \
             memcached                                       &&  \
         \
+        tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/   &&  \
+        \
+        mkdir -p /usr/local/php/ext/ioncube                         &&  \
+        \
+        cp -a  /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}*.so    \
+            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
+        \
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
         docker-php-ext-install opcache                              &&  \
@@ -96,8 +104,5 @@ RUN     apk update                       && \
 # https://secure.php.net/manual/en/apcu.configuration.php
 # also, enable ioncube
 COPY    conf.d/* /usr/local/etc/php/conf.d/
-
-# Temporary ioncube workaround
-RUN     rm -rf /usr/local/etc/php/conf.d/00-ioncube.ini
 
 CMD     ["php-fpm"]
