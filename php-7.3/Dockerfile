@@ -74,11 +74,13 @@ RUN     apk update                       && \
             gd                                                  \
             memcached                                       &&  \
         \
-        tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/   &&  \
+        tar -xvzf                                                       \
+            /tmp/ioncube_loaders_lin_x86-64_7.3_BETA.tar.gz             \
+            -C /tmp/                                                &&  \
         \
         mkdir -p /usr/local/php/ext/ioncube                         &&  \
         \
-        cp -a  /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}*.so    \
+        cp -a /tmp/ioncube_loader_lin_${PHP_VERSION%.*}*_beta.so        \
             /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
         \
         docker-php-ext-configure opcache --enable-opcache           &&  \
