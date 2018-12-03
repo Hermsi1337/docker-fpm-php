@@ -1,14 +1,16 @@
 # Make your FPM-PHP fly on Alpine 
 
-### Pushed to Docker Hub by Travis-CI
-[![Build Status](https://travis-ci.org/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.org/Hermsi1337/docker-fpm-php)
-
 ## Overview
 This is a Dockerfile/image to build a container for FPM-PHP.
 Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).
 
+## Regular builds, automagically
+[![Build Status](https://travis-ci.org/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.org/Hermsi1337/docker-fpm-php)   
+Thanks to [Travis-CI](https://travis-ci.org/) this image is pushed weekly and creates new [tags](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/) if there are new versions available.
+
 ## Tags
-* `7.3.0RC5`, `7.3`, `latest`
+For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/).
+* `7.3.0RC6`, `7.3.0RC5`, `7.3`, `latest`
 * `7.2.12`, `7.2.10`, `7.2.8`, `7.2`, `7`, `stable`
 * `7.1.23`, `7.1.22`, `7.1.20`, `7.1`
 * `7.0.32`, `7.0.31`, `7.0`
