@@ -93,8 +93,6 @@ RUN     apk update                       && \
         docker-php-ext-enable                                           \
             apcu imagick                                            &&  \
         \
-        echo "expose_php=0" > /usr/local/etc/php/php.ini            &&  \
-        \
         apk del .build-dependencies                                 &&  \
         \
         docker-php-source delete                                    &&  \
