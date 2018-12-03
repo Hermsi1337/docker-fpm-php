@@ -48,7 +48,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    PATCH_RELEASE_TAG="$(w3m -dump https://hub.docker.com/_/php/ | grep -i fpm | grep -i alpine | grep -i ${PHP_VERSION_DIR##*-} | cut -d ' ' -f 4 | cut -d '-' -f 1 | head -1)"
+    PATCH_RELEASE_TAG="$(w3m -dump https://hub.docker.com/_/php/ | grep -i fpm | grep -i alpine | grep -i "${PHP_VERSION_DIR##*-}" | cut -d ' ' -f 4 | cut -d '-' -f 1 | head -1)"
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
