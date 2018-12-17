@@ -68,6 +68,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     echo "# # # # # # # # # # # # # # # # # #"
     echo "# Building: ${PHP_VERSION_DIR}"
 
+    set -x
     docker build \
         --quiet \
         --no-cache \
@@ -81,6 +82,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
         --tag "${IMAGE_NAME}:${PATCH_RELEASE_TAG}" \
         --file "${FULL_PHP_VERSION_PATH}/Dockerfile" \
         "${TRAVIS_BUILD_DIR}" 1>/dev/null
+    set +x
 
     if [[ "${TRAVIS_BRANCH}" == "master" ]] && [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
