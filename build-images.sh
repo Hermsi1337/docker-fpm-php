@@ -4,6 +4,7 @@ set -e
 
 LATEST="7.3"
 STABLE="7.3"
+README_URL="https://github.com/docker-library/docs/blob/master/php/README.md"
 
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
 CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
@@ -48,7 +49,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    PATCH_RELEASE_TAG="$(w3m -dump https://hub.docker.com/_/php/ | grep -i fpm | grep -i alpine | grep -i "${PHP_VERSION_DIR##*-}" | cut -d ' ' -f 4 | cut -d '-' -f 1 | head -1)"
+    PATCH_RELEASE_TAG="$(w3m -dump "${README_URL}" | grep -i "fpm" | grep -i "alpine" | grep -i "${PHP_VERSION_DIR##*-}" | cut -d ' ' -f 4 | cut -d '-' -f 1 | head -1)"
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
