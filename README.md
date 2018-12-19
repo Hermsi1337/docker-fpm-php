@@ -10,7 +10,7 @@ Thanks to [Travis-CI](https://travis-ci.org/) this image is pushed weekly and cr
 
 ## Tags
 For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/).
-* `7.3.0`, `7.3.0RC6`, `7.3.0RC5`, `7.3`, `7`, `stable`, `latest`
+* `7.3.0`, `7.3`, `7`, `stable`, `latest`
 * `7.2.12`, `7.2.10`, `7.2.8`, `7.2`
 * `7.1.23`, `7.1.22`, `7.1.20`, `7.1`
 * `7.0.32`, `7.0.31`, `7.0`
