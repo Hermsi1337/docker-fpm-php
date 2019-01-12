@@ -49,7 +49,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "7.0" | grep -i "changelog" | awk '{print $4}')"
+    PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "${PHP_VERSION_DIR##*-}" | grep -i "changelog" | awk '{print $4}')"
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
