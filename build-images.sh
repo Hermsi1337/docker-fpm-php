@@ -55,7 +55,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
             echo "# Skipping: End of life version ${PHP_VERSION_DIR}"
             continue 2
         fi
-    for
+    done
 
     unset PATCH_RELEASE_TAG
     PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "${PHP_VERSION_DIR##*-}" | grep -i "changelog" | awk '{print $4}')"
