@@ -51,7 +51,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     for EOL in ${END_OF_LIFE_VERSIONS[@]} ; do
-        if [[ "${PHP_VERSION_DIR##*-}" = "${EOL}" ]]
+        if [[ "${PHP_VERSION_DIR##*-}" = "${EOL}" ]]; then
             echo "# Skipping: End of life version ${PHP_VERSION_DIR}"
             continue 2
         fi
