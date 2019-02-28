@@ -6,8 +6,6 @@ LATEST="7.3"
 STABLE="7.3"
 README_URL="http://php.net/downloads.php"
 
-END_OF_LIFE_VERSIONS=("7.0")
-
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
 CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
 
@@ -49,13 +47,6 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     unset VERSION_FILE
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
-
-    for EOL in ${END_OF_LIFE_VERSIONS[@]} ; do
-        if [[ "${PHP_VERSION_DIR##*-}" = "${EOL}" ]]; then
-            echo "# Skipping: End of life version ${PHP_VERSION_DIR}"
-            continue 2
-        fi
-    done
 
     unset PATCH_RELEASE_TAG
     PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "${PHP_VERSION_DIR##*-}" | grep -i "changelog" | awk '{print $4}')"
