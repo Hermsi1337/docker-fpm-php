@@ -67,7 +67,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
 
     unset PHPREDIS_VERSION_TAG
-    PHPREDIS_VERSION_TAG="phpredis-${PHPREDIS_VERSION}"
+    PHPREDIS_VERSION_TAG="phpredis${PHPREDIS_VERSION}"
 
     echo "# # # # # # # # # # # # # # # # # #"
     echo "# Building: ${PHP_VERSION_DIR}"
