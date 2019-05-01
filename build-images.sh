@@ -66,6 +66,9 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     unset PHPREDIS_VERSION
     PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
 
+    unset PHPREDIS_VERSION_TAG
+    PHPREDIS_VERSION_TAG="phpredis-${PHPREDIS_VERSION}"
+
     echo "# # # # # # # # # # # # # # # # # #"
     echo "# Building: ${PHP_VERSION_DIR}"
 
@@ -77,21 +80,29 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
         --build-arg PHP_VERSION="${PATCH_RELEASE_TAG}" \
         --build-arg PHPREDIS_VERSION="${PHPREDIS_VERSION}" \
         --tag "${IMAGE_NAME}:${LATEST_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${LATEST_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}" \
         --tag "${IMAGE_NAME}:${STABLE_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${STABLE_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}" \
         --tag "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}" \
         --tag "${IMAGE_NAME}:${MINOR_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${MINOR_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}" \
         --tag "${IMAGE_NAME}:${PATCH_RELEASE_TAG}" \
+        --tag "${IMAGE_NAME}:${PATCH_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}" \
         --file "${FULL_PHP_VERSION_PATH}/Dockerfile" \
         "${TRAVIS_BUILD_DIR}" 1>/dev/null
     set +x
 
     if [[ "${TRAVIS_BRANCH}" == "master" ]] && [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
 
-        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}"
-        [[ "${MINOR_RELEASE_TAG}" == "${LATEST}" ]] && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}"
-        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}" && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${LATEST}" ]] && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}" && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
+        [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}" && docker_push "${IMAGE_NAME}:${MAJOR_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
         docker_push "${IMAGE_NAME}:${MINOR_RELEASE_TAG}"
+        docker_push "${IMAGE_NAME}:${MINOR_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
         docker_push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}"
+        docker_push "${IMAGE_NAME}:${PATCH_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
+        
 
     fi
 
