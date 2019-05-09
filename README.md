@@ -24,6 +24,7 @@ For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php
 * pdo_mysql
 * pdo_pgsql
 * mcrypt
+* exif
 * gd
 * iconv
 * xsl
