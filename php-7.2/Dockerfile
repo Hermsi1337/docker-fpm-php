@@ -53,6 +53,8 @@ RUN     apk update                       && \
         \
         docker-php-ext-configure memcached      &&  \
         \
+        docker-php-ext-configure exif           && \
+        \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
             --with-jpeg-dir=/usr/include/       &&  \
@@ -83,6 +85,8 @@ RUN     apk update                       && \
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
         docker-php-ext-install opcache                              &&  \
+        \
+        docker-php-ext-install exif                                 &&  \
         \
         pecl install                                                    \
             apcu imagick ssh2-1.1.2                                 &&  \
