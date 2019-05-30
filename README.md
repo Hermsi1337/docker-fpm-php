@@ -5,8 +5,8 @@ This is a Dockerfile/image to build a container for FPM-PHP.
 Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in and configured like suggested on [php.net](https://secure.php.net/).
 
 ## Regular builds, automagically
-[![Build Status](https://travis-ci.org/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.org/Hermsi1337/docker-fpm-php)   
-Thanks to [Travis-CI](https://travis-ci.org/) this image is pushed weekly and creates new [tags](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/) if there are new versions available.
+[![Build Status](https://travis-ci.com/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.com/Hermsi1337/docker-fpm-php)  
+Thanks to [Travis-CI](https://travis-ci.com/) this image is pushed weekly and creates new [tags](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/) if there are new versions available.
 
 ## Tags
 For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/).
