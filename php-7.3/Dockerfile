@@ -3,7 +3,7 @@ FROM  php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-4.2.0}"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.0.0}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/

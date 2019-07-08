@@ -1,5 +1,5 @@
-ARG     PHP_VERSION="${PHP_VERSION:-7.1.20}"
-FROM	php:${PHP_VERSION}-fpm-alpine
+ARG   PHP_VERSION="${PHP_VERSION:-7.4.0alpha2}"
+FROM  php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
@@ -36,16 +36,15 @@ RUN     apk update                       && \
             postgresql-dev                  \
             freetype-dev                    \
             libjpeg-turbo-dev               \
-            libmcrypt-dev                   \
             libpng-dev                      \
             gmp                             \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
+            libzip-dev                      \
             libssh2                         \
             libssh2-dev                     \
-            libxslt-dev                     \
-            libmcrypt-dev                && \
+            libxslt-dev                  && \
         \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
@@ -64,7 +63,6 @@ RUN     apk update                       && \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
             intl                                                \
             bcmath                                              \
-            mcrypt                                              \
             xsl                                                 \
             zip                                                 \
             soap                                                \
@@ -78,7 +76,9 @@ RUN     apk update                       && \
             gd                                                  \
             memcached                                       &&  \
         \
-        tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/   &&  \
+        tar -xvzf                                                       \
+            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
+            -C /tmp/                                                &&  \
         \
         mkdir -p /usr/local/php/ext/ioncube                         &&  \
         \
@@ -92,10 +92,10 @@ RUN     apk update                       && \
         docker-php-ext-install exif                                 &&  \
         \
         pecl install                                                    \
-            apcu imagick ssh2-1.1.2                                 &&  \
+            apcu imagick                                            &&  \
         \
         docker-php-ext-enable                                           \
-            apcu imagick ssh2                                       &&  \
+            apcu imagick                                            &&  \
         \
         apk del .build-dependencies                                 &&  \
         \
@@ -106,6 +106,7 @@ RUN     apk update                       && \
 # set recommended PHP.ini settings
 # https://secure.php.net/manual/en/opcache.installation.php
 # https://secure.php.net/manual/en/apcu.configuration.php
+# also, enable ioncube
 COPY    conf.d/* /usr/local/etc/php/conf.d/
 
 CMD     ["php-fpm"]

@@ -2,7 +2,7 @@
 
 set -e
 
-LATEST="7.3"
+LATEST="7.4"
 STABLE="7.3"
 README_URL="http://php.net/downloads.php"
 
@@ -49,7 +49,11 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "${PHP_VERSION_DIR##*-}" | grep -i "changelog" | awk '{print $4}')"
+    if [[ "${PHP_VERSION_DIR}" == "php-7.4" ]]; then
+        PATCH_RELEASE_TAG="7.4.0alpha2"
+    else
+        PATCH_RELEASE_TAG="$(w3m -dump "http://php.net/downloads.php" | grep -i "${PHP_VERSION_DIR##*-}" | grep -i "changelog" | awk '{print $4}')"
+    fi
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
