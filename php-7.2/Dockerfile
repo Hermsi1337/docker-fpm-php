@@ -1,4 +1,4 @@
-ARG     PHP_VERSION="${PHP_VERSION:-7.2.8}"
+ARG     PHP_VERSION="${PHP_VERSION:-7.2.19}"
 FROM	php:${PHP_VERSION}-fpm-alpine3.10
 
 LABEL	maintainer="https://github.com/hermsi1337"
@@ -63,7 +63,6 @@ RUN     apk update                       && \
             --with-freetype-dir=/usr/include/       \
             --with-png-dir=/usr/include             \
             --with-xpm-dir=/usr/include             \
-            --with-vpx-dir=/usr/include             \
             --with-webp-dir=/usr/include            \
             --with-jpeg-dir=/usr/include/       &&  \
         \
@@ -79,7 +78,6 @@ RUN     apk update                       && \
             pdo_pgsql                                           \
             gmp                                                 \
             zlib                                                \
-            libwebp                                             \
             libxpm                                              \
             redis                                               \
             iconv                                               \
