@@ -57,6 +57,7 @@ RUN     apk update                       && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
+            --with-zlib-dir=/usr/include            \
             --with-png-dir=/usr/include             \
             --with-xpm-dir=/usr/include             \
             --with-vpx-dir=/usr/include             \
