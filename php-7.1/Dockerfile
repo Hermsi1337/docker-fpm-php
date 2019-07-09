@@ -18,7 +18,6 @@ RUN     apk update                       && \
         apk add --no-cache                  \
             --virtual .build-dependencies   \
                 $PHPIZE_DEPS                \
-                zlib-dev                    \
                 cyrus-sasl-dev              \
                 git                         \
                 autoconf                    \
@@ -42,7 +41,7 @@ RUN     apk update                       && \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
-            zlib                            \
+            zlib-dev                        \
             libwebp                         \
             libxpm                          \
             libssh2                         \
