@@ -1,9 +1,9 @@
 ARG   PHP_VERSION="${PHP_VERSION:-7.3.3}"
-FROM  php:${PHP_VERSION}-fpm-alpine
+FROM	php:${PHP_VERSION}-fpm-alpine3.10
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-4.2.0}"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.0.0}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
@@ -18,7 +18,6 @@ RUN     apk update                       && \
         apk add --no-cache                  \
             --virtual .build-dependencies   \
                 $PHPIZE_DEPS                \
-                zlib-dev                    \
                 cyrus-sasl-dev              \
                 git                         \
                 autoconf                    \
@@ -41,10 +40,14 @@ RUN     apk update                       && \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
-            libzip-dev                      \
-            libssh2                         \
+            libzip-dev                       \
+            zlib-dev                        \
             libssh2-dev                     \
-            libxslt-dev                  && \
+            libwebp-dev                     \
+            libxpm-dev                      \
+            libvpx-dev                      \
+            libxslt-dev                     \
+            libmcrypt-dev                && \
         \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
@@ -58,6 +61,10 @@ RUN     apk update                       && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
+            --with-png-dir=/usr/include             \
+            --with-xpm-dir=/usr/include             \
+            --with-vpx-dir=/usr/include             \
+            --with-webp-dir=/usr/include            \
             --with-jpeg-dir=/usr/include/       &&  \
         \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
