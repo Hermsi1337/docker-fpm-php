@@ -52,6 +52,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     if [[ "${PHP_VERSION_DIR}" == "php-7.4" ]]; then
         PATCH_RELEASE_TAG="7.4.0alpha2"
     else
+        docker pull php:${PHP_VERSION_DIR##*-}-fpm-alpine
         PATH_RELEASE_TAG="$(docker run --rm --entrypoint /usr/bin/env -t php:${PHP_VERSION_DIR##*-}-fpm-alpine /bin/sh -c 'echo $PHP_VERSION')"
     fi
 
