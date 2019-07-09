@@ -70,6 +70,9 @@ RUN     apk update                       && \
             pdo_mysql                                           \
             pdo_pgsql                                           \
             gmp                                                 \
+            zlib                                                \
+            libwebp                                             \
+            libxpm                                              \
             redis                                               \
             iconv                                               \
             gd                                                  \

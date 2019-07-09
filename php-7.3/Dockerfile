@@ -41,6 +41,9 @@ RUN     apk update                       && \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
+            zlib                            \
+            libwebp                         \
+            libxpm                          \
             libzip-dev                      \
             libssh2                         \
             libssh2-dev                     \

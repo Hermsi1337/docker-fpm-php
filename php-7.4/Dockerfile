@@ -6,10 +6,11 @@ LABEL	maintainer="https://github.com/hermsi1337"
 ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.0.0}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
-ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+#ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
-RUN     apk update                       && \
+RUN     set -x                           && \
+        apk update                       && \
         \
         apk upgrade                      && \
         \
@@ -25,6 +26,7 @@ RUN     apk update                       && \
                 g++                         \
                 libtool                     \
                 make                        \
+                libgcrypt                   \
                 pcre-dev                 && \
         \
         apk add --no-cache                  \
@@ -41,6 +43,9 @@ RUN     apk update                       && \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
+            zlib                            \
+            libwebp                         \
+            libxpm                          \
             libzip-dev                      \
             libssh2                         \
             libssh2-dev                     \
@@ -63,7 +68,7 @@ RUN     apk update                       && \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
             intl                                                \
             bcmath                                              \
-            xsl                                                 \
+#            xsl                                                 \
             zip                                                 \
             soap                                                \
             mysqli                                              \
@@ -76,15 +81,15 @@ RUN     apk update                       && \
             gd                                                  \
             memcached                                       &&  \
         \
-        tar -xvzf                                                       \
-            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
-            -C /tmp/                                                &&  \
-        \
-        mkdir -p /usr/local/php/ext/ioncube                         &&  \
-        \
-        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
-            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
-        \
+#        tar -xvzf                                                       \
+#            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
+#            -C /tmp/                                                &&  \
+#        \
+#        mkdir -p /usr/local/php/ext/ioncube                         &&  \
+#        \
+#        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
+#            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
+#        \
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
         docker-php-ext-install opcache                              &&  \
