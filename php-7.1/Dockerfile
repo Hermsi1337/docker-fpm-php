@@ -1,5 +1,5 @@
-ARG     PHP_VERSION="${PHP_VERSION:-7.1.20}"
-FROM	php:${PHP_VERSION}-fpm-alpine
+ARG     PHP_VERSION="${PHP_VERSION:-7.1.30}"
+FROM	php:${PHP_VERSION}-fpm-alpine3.10
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
@@ -29,7 +29,6 @@ RUN     apk update                       && \
         apk add --no-cache                  \
             tini                            \
             libintl                         \
-            icu                             \
             icu-dev                         \
             libxml2-dev                     \
             postgresql-dev                  \
@@ -37,15 +36,15 @@ RUN     apk update                       && \
             libjpeg-turbo-dev               \
             libmcrypt-dev                   \
             libpng-dev                      \
-            gmp                             \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
+            ibzip-dev                       \
             zlib-dev                        \
-            libwebp                         \
-            libxpm                          \
-            libssh2                         \
             libssh2-dev                     \
+            libwebp-dev                     \
+            libxpm-dev                      \
+            libvpx-dev                      \
             libxslt-dev                     \
             libmcrypt-dev                && \
         \
@@ -61,10 +60,10 @@ RUN     apk update                       && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
-            --with-zlib-dir=/usr/include            \
             --with-png-dir=/usr/include             \
             --with-xpm-dir=/usr/include             \
             --with-vpx-dir=/usr/include             \
+            --with-webp-dir=/usr/include            \
             --with-jpeg-dir=/usr/include/       &&  \
         \
         docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
