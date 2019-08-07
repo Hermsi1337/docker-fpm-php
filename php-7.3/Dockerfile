@@ -40,13 +40,15 @@ RUN     apk update                       && \
             gmp-dev                         \
             libmemcached-dev                \
             imagemagick-dev                 \
-            libzip-dev                       \
+            libzip-dev                      \
             zlib-dev                        \
             libssh2-dev                     \
             libwebp-dev                     \
             libxpm-dev                      \
             libvpx-dev                      \
             libxslt-dev                     \
+            openssl                         \
+            openssl-dev                     \
             libmcrypt-dev                && \
         \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
@@ -58,6 +60,8 @@ RUN     apk update                       && \
         docker-php-ext-configure memcached      &&  \
         \
         docker-php-ext-configure exif           && \
+        \
+        docker-php-ext-configure openssl        && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
@@ -81,6 +85,7 @@ RUN     apk update                       && \
             redis                                               \
             iconv                                               \
             gd                                                  \
+            openssl                                             \
             memcached                                       &&  \
         \
         tar -xvzf                                                       \

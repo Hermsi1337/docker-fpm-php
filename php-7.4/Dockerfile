@@ -49,6 +49,8 @@ RUN     set -x                           && \
             libxpm-dev                      \
             libvpx-dev                      \
             libxslt-dev                     \
+            openssl                         \
+            openssl-dev                     \
             libmcrypt-dev                && \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
@@ -59,6 +61,8 @@ RUN     set -x                           && \
         docker-php-ext-configure memcached      &&  \
         \
         docker-php-ext-configure exif           && \
+        \
+        docker-php-ext-configure openssl        && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
@@ -82,6 +86,7 @@ RUN     set -x                           && \
             redis                                               \
             iconv                                               \
             gd                                                  \
+            openssl                                             \
             memcached                                       &&  \
         \
 #        tar -xvzf                                                       \
