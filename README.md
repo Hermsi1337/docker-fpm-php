@@ -10,7 +10,7 @@ Thanks to [Travis-CI](https://travis-ci.com/) this image is pushed weekly and cr
 
 ## Tags
 For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/).
-* `7.4.0alpha2`, `7.4`, `latest`
+* `7.4.0beta1`, `7.4.0alpha2`, `7.4`, `latest`
 * `7.3.6`,`7.3.5`,`7.3.4`, `7.3.3`, `7.3`, `7`, `stable`
 * `7.2.19`, `7.2.18`, `7.2.17`, `7.2.16`, `7.2`
 * `7.1.30`, `7.1.29`, `7.1.28`, `7.1.27`, `7.1`
@@ -33,6 +33,7 @@ For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php
 * gmp
 * php-redis
 * memcached
+* openssl
 * opcache ([configuration reference](https://secure.php.net/manual/en/opcache.installation.php))
 * apcu ([configuration reference](https://secure.php.net/manual/en/apcu.configuration.php))
 * imagick

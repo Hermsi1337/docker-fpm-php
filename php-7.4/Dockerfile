@@ -1,4 +1,4 @@
-ARG   PHP_VERSION="${PHP_VERSION:-7.4.0alpha2}"
+ARG   PHP_VERSION="${PHP_VERSION:-7.4.0}"
 FROM	php:${PHP_VERSION}-fpm-alpine3.10
 
 LABEL	maintainer="https://github.com/hermsi1337"
@@ -10,6 +10,7 @@ ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 RUN     set -x                           && \
+        \
         apk update                       && \
         \
         apk upgrade                      && \
@@ -49,8 +50,6 @@ RUN     set -x                           && \
             libxpm-dev                      \
             libvpx-dev                      \
             libxslt-dev                     \
-            openssl                         \
-            openssl-dev                     \
             libmcrypt-dev                && \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
         \
@@ -61,8 +60,6 @@ RUN     set -x                           && \
         docker-php-ext-configure memcached      &&  \
         \
         docker-php-ext-configure exif           && \
-        \
-        docker-php-ext-configure openssl        && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
@@ -86,7 +83,6 @@ RUN     set -x                           && \
             redis                                               \
             iconv                                               \
             gd                                                  \
-            openssl                                             \
             memcached                                       &&  \
         \
 #        tar -xvzf                                                       \

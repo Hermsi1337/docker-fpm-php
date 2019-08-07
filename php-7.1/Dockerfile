@@ -9,7 +9,9 @@ ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
-RUN     apk update                       && \
+RUN     set -x                           && \
+        \
+        apk update                       && \
         \
         apk upgrade                      && \
         \
@@ -46,8 +48,6 @@ RUN     apk update                       && \
             libxpm-dev                      \
             libvpx-dev                      \
             libxslt-dev                     \
-            openssl                         \
-            openssl-dev                     \
             libmcrypt-dev                && \
         \
         tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
@@ -59,8 +59,6 @@ RUN     apk update                       && \
         docker-php-ext-configure memcached      &&  \
         \
         docker-php-ext-configure exif           && \
-        \
-        docker-php-ext-configure openssl        && \
         \
         docker-php-ext-configure gd                 \
             --with-freetype-dir=/usr/include/       \
@@ -85,7 +83,6 @@ RUN     apk update                       && \
             redis                                               \
             iconv                                               \
             gd                                                  \
-            openssl                                             \
             memcached                                       &&  \
         \
         tar -xvzf /tmp/ioncube_loaders_lin_x86-64.tar.gz -C /tmp/   &&  \
