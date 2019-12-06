@@ -3,7 +3,7 @@
 set -e
 
 LATEST="7.4"
-STABLE="7.3"
+STABLE="7.4"
 README_URL="http://php.net/downloads.php"
 
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
@@ -49,12 +49,8 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
 
     unset PATCH_RELEASE_TAG
-    if [[ "${PHP_VERSION_DIR}" == "php-7.4" ]]; then
-        PATCH_RELEASE_TAG="7.4.0RC5"
-    else
-        docker pull php:${PHP_VERSION_DIR##*-}-fpm-alpine
-        PATCH_RELEASE_TAG="$(docker run --rm --entrypoint /usr/bin/env -t php:${PHP_VERSION_DIR##*-}-fpm-alpine /bin/sh -c 'echo $PHP_VERSION' | tr -d '\r')"
-    fi
+    docker pull php:${PHP_VERSION_DIR##*-}-fpm-alpine
+    PATCH_RELEASE_TAG="$(docker run --rm --entrypoint /usr/bin/env -t php:${PHP_VERSION_DIR##*-}-fpm-alpine /bin/sh -c 'echo $PHP_VERSION' | tr -d '\r')"
 
     unset MINOR_RELEASE_TAG
     MINOR_RELEASE_TAG="${PATCH_RELEASE_TAG%.*}"
