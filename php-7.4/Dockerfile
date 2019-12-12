@@ -113,7 +113,6 @@ RUN     set -x                           && \
 # set recommended PHP.ini settings
 # https://secure.php.net/manual/en/opcache.installation.php
 # https://secure.php.net/manual/en/apcu.configuration.php
-# also, enable ioncube
-COPY    conf.d/* /usr/local/etc/php/conf.d/
+COPY    ["conf.d/05-apcu-recommended.ini", "conf.d/05-opcache-recommended.ini", "conf.d/05-security-recommended.ini", "/usr/local/etc/php/conf.d/"]
 
 CMD     ["php-fpm"]
