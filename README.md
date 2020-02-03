@@ -1,3 +1,8 @@
+[![Travis](https://shields.beevelop.com/travis/Hermsi1337/docker-fpm-php.svg?style=flat-square)](https://travis-ci.com/Hermsi1337/docker-fpm-php)
+[![Pulls](https://shields.beevelop.com/docker/pulls/hermsi/alpine-fpm-php.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
+[![Layers](https://shields.beevelop.com/docker/image/layers/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
+[![Size](https://shields.beevelop.com/docker/image/image-size/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
+
 # Make your FPM-PHP fly on Alpine
 
 ## Overview
@@ -7,7 +12,6 @@ Most of the regular needed modules (apcu, opcache, php-redis, etc.) are built in
 
 ## Regular builds, automagically
 
-[![Build Status](https://travis-ci.com/Hermsi1337/docker-fpm-php.svg?branch=master)](https://travis-ci.com/Hermsi1337/docker-fpm-php)  
 Thanks to [Travis-CI](https://travis-ci.com/) this image is pushed weekly and creates new [tags](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/) if there are new versions available.
 
 ## Tags
