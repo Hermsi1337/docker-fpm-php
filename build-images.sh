@@ -9,17 +9,10 @@ README_URL="http://php.net/downloads.php"
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
 CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
 
+PHPREDIS_VERSION="$(w3m -dump "https://github.com/phpredis/phpredis/releases" | grep -i "Releases Tags" -A5 | egrep "[0-9]+.[0-9]+.[0-9]+" | tr -d '\r')"
+PHPREDIS_VERSION_TAG="phpredis${PHPREDIS_VERSION}"
+
 BUILD_ALL_REGEX=".*conf.d.*\|.*build-images.sh.*"
-
-exact_version() {
-
-    unset APP
-    APP="${1}"
-    FILE="${2}"
-
-    grep -i "${APP}" "${FILE}" | cut -d '=' -f 2
-
-}
 
 docker_push() {
 
@@ -45,9 +38,6 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
     unset FULL_PHP_VERSION_PATH
     FULL_PHP_VERSION_PATH="${TRAVIS_BUILD_DIR}/${PHP_VERSION_DIR}"
 
-    unset VERSION_FILE
-    VERSION_FILE="${FULL_PHP_VERSION_PATH}/exact_versions"
-
     unset PATCH_RELEASE_TAG
     docker pull php:${PHP_VERSION_DIR##*-}-fpm-alpine
     PATCH_RELEASE_TAG="$(docker run --rm --entrypoint /usr/bin/env -t php:${PHP_VERSION_DIR##*-}-fpm-alpine /bin/sh -c 'echo $PHP_VERSION' | tr -d '\r')"
@@ -63,12 +53,6 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
 
     unset LATEST_RELEASE_TAG
     LATEST_RELEASE_TAG="latest"
-
-    unset PHPREDIS_VERSION
-    PHPREDIS_VERSION="$(exact_version PECLREDIS ${VERSION_FILE})"
-
-    unset PHPREDIS_VERSION_TAG
-    PHPREDIS_VERSION_TAG="phpredis${PHPREDIS_VERSION}"
 
     echo "# # # # # # # # # # # # # # # # # #"
     echo "# Building: ${PHP_VERSION_DIR}"
