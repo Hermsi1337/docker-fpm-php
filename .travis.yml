@@ -7,7 +7,7 @@ addons:
     packages:
       - docker-ce
       - w3m
-      - egrep
+      - grep
 
 env:
   global:
