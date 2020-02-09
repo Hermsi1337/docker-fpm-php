@@ -1,9 +1,9 @@
-ARG   PHP_VERSION="${PHP_VERSION:-7.3.6}"
-FROM	php:${PHP_VERSION}-fpm-alpine3.10
+ARG     PHP_VERSION="${PHP_VERSION:-7.3.14}"
+FROM	php:${PHP_VERSION}-fpm-alpine3.11
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.0.0}"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.1.1}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
