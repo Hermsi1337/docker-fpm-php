@@ -6,6 +6,8 @@ addons:
   apt:
     packages:
       - docker-ce
+      - w3m
+      - egrep
 
 env:
   global:
