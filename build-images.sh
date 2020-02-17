@@ -9,7 +9,7 @@ README_URL="http://php.net/downloads.php"
 DIRECTORIES=($(find "${TRAVIS_BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
 CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
 
-PHPREDIS_VERSION="$(w3m -dump "https://github.com/phpredis/phpredis/releases" | grep -i "Releases Tags" -A5 | egrep "^[0-9]+.[0-9]+.[0-9]+RC[0-9]+" | tr -d '\r' | awk '{print $1}')"
+PHPREDIS_VERSION="$(w3m -dump "https://github.com/phpredis/phpredis/releases"  | egrep "^[0-9]+.[0-9]+.[0-9]+(RC[0-9]+)?" | tr -d '\r' | awk '{print $1}' | head -n1)"
 PHPREDIS_VERSION_TAG="phpredis${PHPREDIS_VERSION}"
 
 BUILD_ALL_REGEX=".*conf.d.*\|.*build-images.sh.*"
