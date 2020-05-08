@@ -5,7 +5,7 @@
 [![Stars](https://shields.beevelop.com/docker/stars/hermsi/alpine-fpm-php.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
 [![Layers](https://shields.beevelop.com/docker/image/layers/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
 [![Size](https://shields.beevelop.com/docker/image/image-size/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.me/Hermsi)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-yellow.svg)](https://donate.dennis-hermsmeier.de)
 
 ## Overview
 
