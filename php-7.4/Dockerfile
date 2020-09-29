@@ -6,7 +6,7 @@ LABEL	maintainer="https://github.com/hermsi1337"
 ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.1.1}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
-#ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 RUN     set -x                           && \
@@ -83,15 +83,15 @@ RUN     set -x                           && \
             gd                                                  \
             memcached                                       &&  \
         \
-#        tar -xvzf                                                       \
-#            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
-#            -C /tmp/                                                &&  \
-#        \
-#        mkdir -p /usr/local/php/ext/ioncube                         &&  \
-#        \
-#        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
-#            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
-#        \
+        tar -xvzf                                                       \
+            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
+            -C /tmp/                                                &&  \
+        \
+        mkdir -p /usr/local/php/ext/ioncube                         &&  \
+        \
+        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
+            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
+        \
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
         docker-php-ext-install opcache                              &&  \
