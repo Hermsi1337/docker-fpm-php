@@ -1,5 +1,5 @@
 ARG     PHP_VERSION="${PHP_VERSION:-7.3.14}"
-FROM	php:${PHP_VERSION}-fpm-alpine3.11
+FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
@@ -80,7 +80,7 @@ RUN     set -x                           && \
             pdo_pgsql                                           \
             gmp                                                 \
             redis                                               \
-            iconv                                               \
+            $(if ! php-fpm -m | grep -i iconv &>/dev/null ; then echo iconv ; fi) \
             gd                                                  \
             memcached                                       &&  \
         \

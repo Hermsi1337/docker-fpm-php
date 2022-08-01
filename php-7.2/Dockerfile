@@ -1,5 +1,5 @@
 ARG     PHP_VERSION="${PHP_VERSION:-7.2.27}"
-FROM	php:${PHP_VERSION}-fpm-alpine3.11
+FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 

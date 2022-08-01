@@ -1,10 +1,6 @@
 # Make your FPM-PHP fly on Alpine
 
-[![Travis](https://shields.beevelop.com/travis/Hermsi1337/docker-fpm-php.svg?style=flat-square)](https://travis-ci.com/Hermsi1337/docker-fpm-php)
-[![Pulls](https://shields.beevelop.com/docker/pulls/hermsi/alpine-fpm-php.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
-[![Stars](https://shields.beevelop.com/docker/stars/hermsi/alpine-fpm-php.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
-[![Layers](https://shields.beevelop.com/docker/image/layers/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
-[![Size](https://shields.beevelop.com/docker/image/image-size/hermsi/alpine-fpm-php/latest.svg?style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
+[![Pulls](https://img.shields.io/docker/pulls/hermsi/alpine-fpm-php?label=hub.docker.com%20pulls&style=flat-square)](https://hub.docker.com/r/hermsi/alpine-fpm-php/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=T85UYT37P3YNJ&source=url)
 
 ## Overview
@@ -19,12 +15,14 @@ Thanks to [Travis-CI](https://travis-ci.com/) this image is pushed weekly and cr
 ## Tags
 
 For recent tags check [Dockerhub](https://hub.docker.com/r/hermsi/alpine-fpm-php/tags/).
-* `8.0`, `8`, `latest`,`8.0.0beta4`
-* `7.4`, `7`, `stable`, `7.4.2`, `7.4.1`, `7.4.0`
-* `7.3`, `7.3.14`, `7.3.13`, `7.3.12`, `7.3.11`, `7.3.10`, `7.3.9`, `7.3.8`, `7.3.7`, `7.3.6`,`7.3.5`,`7.3.4`, `7.3.3`
-* `7.2`, `7.2.27`, `7.2.26`, `7.2.25`, `7.2.24`, `7.2.23`, `7.2.22`, `7.2.20`, `7.2.19`, `7.2.18`, `7.2.17`, `7.2.16`
-* `7.1`, `7.1.33`, `7.1.32`, `7.1.31`, `7.1.30`, `7.1.29`, `7.1.28`, `7.1.27` (`EOL`)
-* `7.0`, `7.0.33` (`EOL`)
+* `8.2`, `latest` (BETA)
+* `8.1`, `stable` (SUPPORTED)
+* `8.0` (SUPPORTED)
+* `7.4` (SECURITY ONLY)
+* `7.3` (EOL)
+* `7.2` (EOL)
+* `7.1` (EOL)
+* `7.0` (EOL)
 
 ## Features
 

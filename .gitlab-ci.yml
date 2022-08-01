@@ -1,0 +1,26 @@
+stages:
+  - build
+  - deploy
+
+services:
+  - docker:dind
+
+image: docker:20
+
+before_script:
+  - apk add --no-cache w3m bash
+  - find . -name "*.sh" -print0 | xargs -0 -r -n1 bash -n
+
+build:docker:
+  stage: build
+  script:
+    - ./build-images.sh
+  except:
+    - master
+
+deploy:docker:
+  stage: deploy
+  script:
+    - ./build-images.sh
+  only:
+    - master

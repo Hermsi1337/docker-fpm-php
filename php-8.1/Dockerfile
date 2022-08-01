@@ -1,13 +1,13 @@
-ARG     PHP_VERSION="${PHP_VERSION:-8.0.0beta4}"
+ARG     PHP_VERSION="${PHP_VERSION:-8.1.0}"
 FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.1.1}"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.3.7}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
 #ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
-#ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
+ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 RUN     set -x                           && \
         \
@@ -51,10 +51,10 @@ RUN     set -x                           && \
             libvpx-dev                      \
             libxslt-dev                     \
             libmcrypt-dev                && \
-#        tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
-#        \
-#        mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis    && \
-#        \
+        tar xfz /tmp/${PHPREDIS_VERSION}.tar.gz   && \
+        \
+        mv phpredis-$PHPREDIS_VERSION /usr/src/php/ext/redis    && \
+        \
         git clone https://github.com/php-memcached-dev/php-memcached.git /usr/src/php/ext/memcached/    && \
         \
         docker-php-ext-configure memcached      &&  \
@@ -78,20 +78,20 @@ RUN     set -x                           && \
             pdo_mysql                                           \
             pdo_pgsql                                           \
             gmp                                                 \
-#            redis                                               \
-            iconv                                               \
+            redis                                               \
+            $(if ! php-fpm -m | grep -i iconv &>/dev/null ; then echo iconv ; fi) \
             gd                                                  \
             memcached                                       &&  \
-#        \
-#        tar -xvzf                                                       \
-#            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
-#            -C /tmp/                                                &&  \
-#        \
-#        mkdir -p /usr/local/php/ext/ioncube                         &&  \
-#        \
-#        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
-#            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
         \
+        #tar -xvzf                                                       \
+        #    /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
+        #    -C /tmp/                                                &&  \
+        #\
+        #mkdir -p /usr/local/php/ext/ioncube                         &&  \
+        #\
+        #cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
+        #    /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
+        #\
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
         docker-php-ext-install opcache                              &&  \
