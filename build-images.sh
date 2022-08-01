@@ -4,18 +4,18 @@ set -e
 
 IMAGE_NAME="${IMAGE_NAME:-hermsi/alpine-fpm-php}"
 
-LATEST="8.0"
-STABLE="7.4"
+LATEST="8.2"
+STABLE="8.1"
 
 BUILD_DIR="${PWD}"
-if [[ -n "${TRAVIS_BUILD_DIR}" ]] ; then
-  BUILD_DIR="${TRAVIS_BUILD_DIR}"
+if [[ -n "${CI_PROJECT_DIR}" ]] ; then
+  BUILD_DIR="${CI_PROJECT_DIR}"
 fi
 
-DIRECTORIES=($(find "${BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" -o -name "conf.d" | sed -e 's#.*\/\(\)#\1#' | sort))
-CHANGED_DIRECTORIES=($(git -C "${TRAVIS_BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
+DIRECTORIES=($(find "${BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" | sed -e 's#.*\/\(\)#\1#' | sort))
+CHANGED_DIRECTORIES=($(git -C "${BUILD_DIR}" diff HEAD~ --name-only | grep -ioe "php-[0-9+].[0-9+]\|conf.d\|build-images.sh" | sort))
 
-PHPREDIS_VERSION="$(w3m -dump "https://github.com/phpredis/phpredis/releases"  | egrep "^[0-9]+.[0-9]+.[0-9]+(RC[0-9]+)?" | tr -d '\r' | awk '{print $1}' | head -n1)"
+PHPREDIS_VERSION="$(w3m -dump "https://github.com/phpredis/phpredis/tags"  | egrep "^[0-9]+.[0-9]+.[0-9]+(RC[0-9]+)?" | tr -d '\r' | awk '{print $1}' | head -n1)"
 PHPREDIS_VERSION_TAG="phpredis${PHPREDIS_VERSION}"
 
 BUILD_ALL_REGEX=".*conf.d.*\|.*build-images.sh.*"
@@ -31,9 +31,9 @@ docker_push() {
 if [[ -n "${1}" ]]; then
     TO_BUILD=("${1}")
 elif [[ "${#CHANGED_DIRECTORIES[@]}" -eq 0 ]] || [[ $( echo "${CHANGED_DIRECTORIES[@]}" | grep -e "${BUILD_ALL_REGEX}" ) ]]; then
-    TO_BUILD=($(find "${BUILD_DIR}" -maxdepth 1 -mindepth 1 -type d -name "php*" | sed -e 's#.*\/\(\)#\1#' | sort))
+    TO_BUILD=(${DIRECTORIES[*]})
 else
-    TO_BUILD=(${CHANGED_DIRECTORIES})
+    TO_BUILD=(${CHANGED_DIRECTORIES[*]})
 fi
 
 echo "# # # # # # # # # # # # # # # # # # # # # # # # #"
@@ -87,7 +87,7 @@ for PHP_VERSION_DIR in ${TO_BUILD[@]}; do
         "${BUILD_DIR}"
     set +x
 
-    if [[ "${TRAVIS_BRANCH}" == "master" ]] && [[ "${TRAVIS_PULL_REQUEST}" == "false" ]]; then
+    if [[ "${CI_COMMIT_REF_SLUG}" == "master" ]]; then
 
         [[ "${MINOR_RELEASE_TAG}" == "${STABLE}" ]] && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}" && docker_push "${IMAGE_NAME}:${STABLE_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"
         [[ "${MINOR_RELEASE_TAG}" == "${LATEST}" ]] && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}" && docker_push "${IMAGE_NAME}:${LATEST_RELEASE_TAG}-${PHPREDIS_VERSION_TAG}"

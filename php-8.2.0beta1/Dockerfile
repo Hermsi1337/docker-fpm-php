@@ -1,12 +1,12 @@
-ARG     PHP_VERSION="${PHP_VERSION:-7.4.2}"
+ARG     PHP_VERSION="${PHP_VERSION:-8.2.0beta1}"
 FROM	php:${PHP_VERSION}-fpm-alpine
 
 LABEL	maintainer="https://github.com/hermsi1337"
 
-ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.1.1}"
+ARG     PHPREDIS_VERSION="${PHPREDIS_VERSION:-5.3.7}"
 ENV     PHPREDIS_VERSION="${PHPREDIS_VERSION}"
 
-ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
+#ADD     http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz /tmp/
 ADD     https://github.com/phpredis/phpredis/archive/${PHPREDIS_VERSION}.tar.gz /tmp/
 
 RUN     set -x                           && \
@@ -82,15 +82,15 @@ RUN     set -x                           && \
             $(if ! php-fpm -m | grep -i iconv &>/dev/null ; then echo iconv ; fi) \
             gd                                                  \
             memcached                                       &&  \
-        \
-        tar -xvzf                                                       \
-            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
-            -C /tmp/                                                &&  \
-        \
-        mkdir -p /usr/local/php/ext/ioncube                         &&  \
-        \
-        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
-            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
+#        \
+#        tar -xvzf                                                       \
+#            /tmp/ioncube_loaders_lin_x86-64.tar.gz                      \
+#            -C /tmp/                                                &&  \
+#        \
+#        mkdir -p /usr/local/php/ext/ioncube                         &&  \
+#        \
+#        cp -a /tmp/ioncube/ioncube_loader_lin_${PHP_VERSION%.*}.so      \
+#            /usr/local/php/ext/ioncube/ioncube_loader.so            &&  \
         \
         docker-php-ext-configure opcache --enable-opcache           &&  \
         \
@@ -98,11 +98,14 @@ RUN     set -x                           && \
         \
         docker-php-ext-install exif                                 &&  \
         \
-        pecl install                                                    \
-            apcu imagick                                            &&  \
-        \
-        docker-php-ext-enable                                           \
-            apcu imagick                                            &&  \
+        git clone \
+            https://github.com/krakjoe/apcu.git \
+            /usr/src/php/ext/apcu                                   &&  \
+        git clone \
+            https://github.com/Imagick/imagick.git \
+            /usr/src/php/ext/imagick                                &&  \
+        docker-php-ext-install apcu imagick                         &&  \
+        docker-php-ext-enable apcu imagick                          &&  \
         \
         apk del .build-dependencies                                 &&  \
         \
