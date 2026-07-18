@@ -120,7 +120,29 @@ else
   bad "php-fpm -t failed:"; cat /tmp/smoke_fpm.out
 fi
 
-# --- 4) variant extras -------------------------------------------------------
+# --- 4) CA trust store is current --------------------------------------------
+# Every image gets the CA bundle from an alpine:latest donor stage, copied to
+# BOTH locations (curl reads /etc/ssl/certs/ca-certificates.crt, PHP's openssl
+# streams read /etc/ssl/cert.pem). Compare both against the same donor by
+# sha256 - deterministic, no network needed inside the tested image.
+echo "-- CA trust store"
+# Paths are wrapped in `sh -c` strings so MSYS (Windows Git Bash) does not
+# mangle the leading /etc/... into a host path.
+ref_sum="$(docker run --rm alpine:latest sh -c 'sha256sum /etc/ssl/certs/ca-certificates.crt' | awk '{print $1}')"
+if [ -z "$ref_sum" ]; then
+  bad "could not read the reference bundle from alpine:latest"
+else
+  for bundle in etc/ssl/certs/ca-certificates.crt etc/ssl/cert.pem; do
+    img_sum="$(drun sh -c "sha256sum /${bundle}" 2>/dev/null | awk '{print $1}')"
+    if [ "$img_sum" = "$ref_sum" ]; then
+      ok "/${bundle} matches alpine:latest bundle"
+    else
+      bad "/${bundle} is stale or missing (image: ${img_sum:-<unreadable>}, alpine:latest: ${ref_sum})"
+    fi
+  done
+fi
+
+# --- 5) variant extras -------------------------------------------------------
 case "$variant" in
   composer)
     echo "-- composer"

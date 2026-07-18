@@ -59,6 +59,14 @@ ADD --checksum=sha256:d4a7cc35e2cd43a30578faac3c23d7920250db2f39badfc6e82de33a8d
 RUN mkdir -p /out && tar -xzf /tmp/ioncube.tar.gz -C /out
 
 ########################################################################
+# cacerts: donor for a current CA trust store. Deliberately a rolling
+# alpine:latest - the weekly rebuild copies today's bundle into every image.
+# Essential here: the frozen 2019 bases carry trust stores that predate
+# ISRG/Let's Encrypt root rotations, so HTTPS from PHP would fail otherwise.
+########################################################################
+FROM alpine:latest AS cacerts
+
+########################################################################
 # base: all bundled extensions and recommended config
 ########################################################################
 FROM php:${PHP_VERSION}-fpm-alpine AS base
@@ -155,6 +163,18 @@ RUN --mount=type=bind,from=sources,source=/${PHP_VERSION},target=/tmp/pecl \
 # Recommended php.ini snippets (opcache, apcu, expose_php=Off) - same set as
 # the main Dockerfile.
 COPY conf.d/ /usr/local/etc/php/conf.d/
+
+# Refresh the CA trust store from the donor stage. Alpine has TWO bundle
+# locations: curl & friends read /etc/ssl/certs/ca-certificates.crt, PHP's
+# openssl streams read /etc/ssl/cert.pem - on these frozen bases both are
+# stale 2018/2019 copies (and differ from each other!). Replace both.
+# Honest limit: this refreshes the ROOTS only; the LibreSSL stack itself
+# stays frozen (no TLS 1.3 on 5.6/7.0).
+RUN --mount=type=bind,from=cacerts,source=/etc/ssl/certs/ca-certificates.crt,target=/tmp/ca-certificates.crt \
+    set -eux; \
+    rm -f /etc/ssl/cert.pem /etc/ssl/certs/ca-certificates.crt; \
+    install -D -m 0644 /tmp/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt; \
+    install -D -m 0644 /tmp/ca-certificates.crt /etc/ssl/cert.pem
 
 CMD ["php-fpm"]
 

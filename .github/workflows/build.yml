@@ -7,9 +7,10 @@ on:
   pull_request:
   workflow_dispatch:
   schedule:
-    # Weekly rebuild of the supported (PHP 8.2+) versions only. EOL versions
-    # sit on frozen base images, so there is nothing to gain from rebuilding
-    # them on a schedule - they build on push / workflow_dispatch instead.
+    # Weekly rebuild of the WHOLE lineup. Supported versions (PHP 8.2+) pick
+    # up base image + Alpine package updates; EOL versions sit on frozen bases
+    # but still get a current CA trust store out of the rebuild (the cacerts
+    # donor stage copies today's alpine:latest bundle into every image).
     - cron: "0 4 * * 1"
 
 # Cancel superseded runs for the same PR; let push/dispatch/schedule runs
@@ -40,16 +41,17 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          # On a schedule, only rebuild supported versions. Every other trigger
-          # builds the whole lineup. Each PHP version expands into the standard
-          # and composer variants (multi-arch) plus, where a loader exists, an
-          # amd64-only ioncube variant. On pull requests we build amd64 only -
-          # it is a build-only validation, so there is no need to pay for arm64
-          # emulation across the whole matrix.
+          # Every trigger builds the whole lineup (the weekly schedule too:
+          # EOL versions get a fresh CA trust store out of each rebuild). Each
+          # PHP version expands into the standard and composer variants
+          # (multi-arch) plus, where a loader exists, an amd64-only ioncube
+          # variant. On pull requests we build amd64 only - it is a build-only
+          # validation, so there is no need to pay for arm64 emulation across
+          # the whole matrix.
           matrix=$(yq -o=json '.' versions.yaml | jq -c --arg event "$EVENT_NAME" '
             {
               include: (
-                [ .versions[] | select($event != "schedule" or .supported == true) ]
+                .versions
                 | map(
                     . as $v
                     | ( if $event == "pull_request" then "linux/amd64" else $v.platforms end ) as $plat
@@ -129,7 +131,9 @@ jobs:
 
       # amd64: build, load into the runner's docker, and smoke-test. Runs on
       # every trigger - on pull requests this is the whole story (build-only
-      # validation, nothing is pushed).
+      # validation, nothing is pushed). pull: true makes buildx re-resolve the
+      # base images AND the alpine:latest cacerts donor stage, so a weekly
+      # rebuild always embeds the current CA bundle.
       - name: Build amd64 (load)
         uses: docker/build-push-action@v7
         with:
@@ -140,6 +144,7 @@ jobs:
           build-args: |
             PHP_VERSION=${{ matrix.php }}
             PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          pull: true
           load: true
           provenance: false
           tags: ${{ steps.names.outputs.image }}
@@ -164,6 +169,7 @@ jobs:
           build-args: |
             PHP_VERSION=${{ matrix.php }}
             PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          pull: true
           load: true
           provenance: false
           tags: ${{ steps.names.outputs.image }}-arm64
@@ -222,6 +228,7 @@ jobs:
           build-args: |
             PHP_VERSION=${{ matrix.php }}
             PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          pull: true
           push: true
           provenance: false
           tags: ${{ steps.meta.outputs.tags }}

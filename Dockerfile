@@ -17,6 +17,13 @@
 ARG PHP_VERSION=8.5
 
 ########################################################################
+# cacerts: donor for a current CA trust store. Deliberately a rolling
+# alpine:latest - the weekly rebuild copies today's bundle into every image,
+# which is what keeps HTTPS working from the frozen EOL bases.
+########################################################################
+FROM alpine:latest AS cacerts
+
+########################################################################
 # base: shared layer with all bundled extensions and recommended config
 ########################################################################
 FROM php:${PHP_VERSION}-fpm-alpine AS base
@@ -57,6 +64,17 @@ RUN set -eux; \
 # https://www.php.net/manual/en/opcache.installation.php
 # https://www.php.net/manual/en/apcu.configuration.php
 COPY conf.d/ /usr/local/etc/php/conf.d/
+
+# Refresh the CA trust store from the donor stage. Alpine has TWO bundle
+# locations: curl & friends read /etc/ssl/certs/ca-certificates.crt, PHP's
+# openssl streams read /etc/ssl/cert.pem (the LibreSSL/openssl default -
+# a symlink on newer bases, a stale copy on older ones). Replace both with
+# the current bundle; on supported bases this is a content no-op.
+RUN --mount=type=bind,from=cacerts,source=/etc/ssl/certs/ca-certificates.crt,target=/tmp/ca-certificates.crt \
+    set -eux; \
+    rm -f /etc/ssl/cert.pem /etc/ssl/certs/ca-certificates.crt; \
+    install -D -m 0644 /tmp/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt; \
+    install -D -m 0644 /tmp/ca-certificates.crt /etc/ssl/cert.pem
 
 CMD ["php-fpm"]
 

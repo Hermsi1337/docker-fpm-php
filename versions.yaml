@@ -44,10 +44,13 @@ extensions:
 #   platforms  multi-arch target for the standard/composer variants; the
 #              ioncube variant is always linux/amd64 only (see below).
 #   ioncube    whether an ionCube loader exists for that PHP version.
-#   supported  true  -> still receiving upstream fixes (PHP 8.2+), rebuilt
-#                       weekly by the schedule trigger.
+#   supported  true  -> still receiving upstream fixes (PHP 8.2+).
 #              false -> EOL, built best-effort on frozen base images; no
 #                       security guarantees.
+#              Informational only since the CA-refresh change: the weekly
+#              schedule rebuilds the WHOLE lineup (supported versions pick up
+#              base/package updates, EOL versions get a fresh CA trust store
+#              from the cacerts donor stage).
 #   latest     newest GA release; additionally gets the unsuffixed :latest tags.
 #   dockerfile "legacy" -> built from Dockerfile.legacy (PHP 5.6 / 7.0, where
 #              the extension installer cannot run). Absent -> ./Dockerfile.
