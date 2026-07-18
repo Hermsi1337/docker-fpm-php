@@ -12,7 +12,7 @@ drivers, and more) already baked in and configured to sensible defaults.
 
 The whole lineup is produced from **one parameterised
 [`Dockerfile`](./Dockerfile)** and a maintained
-[`versions.json`](./versions.json). Extensions are installed with
+[`versions.yaml`](./versions.yaml). Extensions are installed with
 [`mlocati/docker-php-extension-installer`](https://github.com/mlocati/docker-php-extension-installer)
 instead of being hand-compiled.
 
@@ -71,6 +71,11 @@ The `<X.Y>` tags roll forward to the newest patch release of that branch
 `zip` &mdash; on top of everything already present in the official
 `php:<x.y>-fpm-alpine` base image (`openssl`, `iconv`, `pdo`, ...).
 
+This list is **not** hard-coded in the `Dockerfile`; it lives in
+[`versions.yaml`](./versions.yaml) and is rendered into the build via the
+`PHP_EXTENSIONS` build-arg. See [Extension list &amp; smoke
+tests](#extension-list--smoke-tests) below.
+
 `opcache` and `apcu` ship with the recommended tuning from
 [`conf.d/`](./conf.d), and `expose_php` is turned off.
 
@@ -87,17 +92,83 @@ docker run --rm hermsi/alpine-fpm-php:8.4-composer composer --version
 
 ## Building locally
 
-```bash
-# standard image
-docker build --build-arg PHP_VERSION=8.4 --target standard -t fpm-php:8.4 .
+The `Dockerfile` has no built-in extension list &mdash; it must be supplied via
+the `PHP_EXTENSIONS` build-arg (a bare `docker build` fails fast with a hint).
+[`build-local.sh`](./build-local.sh) reads the right list for a version out of
+[`versions.yaml`](./versions.yaml) and builds the image for you:
 
-# composer / ioncube variants
-docker build --build-arg PHP_VERSION=8.4 --target composer -t fpm-php:8.4-composer .
-docker build --build-arg PHP_VERSION=8.4 --target ioncube  -t fpm-php:8.4-ioncube .
+```bash
+./build-local.sh 8.4                      # standard, linux/amd64
+./build-local.sh 8.4 composer             # composer variant
+./build-local.sh 8.4 ioncube              # ioncube variant
+./build-local.sh 8.4 standard linux/arm64 # cross-build (needs QEMU/binfmt)
 ```
 
-To add or drop a PHP version, edit [`versions.json`](./versions.json); the CI
+It needs `bash`, `docker`, `jq` and `yq`. If `yq` is not installed it falls
+back to the `mikefarah/yq` container, so a checkout with only Docker present
+(e.g. Windows + Git Bash) still works.
+
+If you would rather call Docker yourself, pass both build-args explicitly (the
+extension string is whatever `versions.yaml` resolves to for that version):
+
+```bash
+docker build --build-arg PHP_VERSION=8.4 \
+  --build-arg PHP_EXTENSIONS="apcu bcmath gd ... zip" \
+  --target standard -t fpm-php:8.4 .
+```
+
+To add or drop a PHP version, edit [`versions.yaml`](./versions.yaml); the CI
 matrix is generated from it.
+
+## Extension list &amp; smoke tests
+
+The bundled extension set is maintained in **one place**,
+[`versions.yaml`](./versions.yaml):
+
+```yaml
+extensions:        # global list, installed on every version/variant
+  - apcu
+  - bcmath
+  # ...
+versions:
+  - php: "7.2"
+    # optional per-version tweaks; effective set is
+    # extensions + extensions_add - extensions_remove
+    extensions_add:
+      - calendar
+```
+
+That single source feeds three consumers, so they can never drift apart:
+
+1. the **build** &mdash; the effective list is rendered into the image through
+   the `PHP_EXTENSIONS` build-arg (never hard-coded in the `Dockerfile`);
+2. **CI** &mdash; the build matrix and the per-build extension list are both
+   derived from `versions.yaml`;
+3. the **smoke test** &mdash; [`test/smoke.sh`](./test/smoke.sh) reads the same
+   list back and asserts every extension is actually present in the built image.
+
+Every image built in CI is smoke-tested **before** it is pushed. For multi-arch
+versions both the `amd64` and the (QEMU-emulated) `arm64` image are built,
+loaded and tested first; only then is the multi-arch image pushed.
+
+`test/smoke.sh` verifies, inside the container:
+
+- every expected extension shows up in `php -m` (with the `opcache` &rarr;
+  `Zend OPcache` naming handled);
+- the running PHP version matches the expected minor;
+- `php-fpm -t` reports a valid configuration;
+- the variant extras work (`composer --version`; the ionCube loader in
+  `php -v`).
+
+Run it locally against an image you built:
+
+```bash
+./build-local.sh 8.4 composer
+./test/smoke.sh fpm-php:8.4-composer 8.4 composer
+```
+
+Like `build-local.sh`, it uses a local `yq` when available and otherwise the
+`mikefarah/yq` container.
 
 ## Migrating from the old tag scheme
 
