@@ -68,9 +68,11 @@ Trigger behaviour:
   required).
 - **push to `master` / `workflow_dispatch`** &mdash; full lineup, multi-arch,
   push after smoke tests.
-- **schedule** (weekly, `Mon 04:00 UTC`) &mdash; **supported versions only**
-  (`supported: true`, i.e. PHP 8.2+). EOL versions sit on frozen base images, so
-  rebuilding them buys nothing.
+- **schedule** (weekly, `Mon 04:00 UTC`) &mdash; the **whole lineup**.
+  Supported versions (PHP 8.2+) pick up base image / Alpine package updates;
+  EOL versions sit on frozen bases but get a fresh CA trust store out of each
+  rebuild (see below). `supported` in `versions.yaml` is informational only
+  and no longer filters the schedule.
 - **concurrency** &mdash; superseded PR runs are cancelled; push/dispatch/
   schedule runs are allowed to finish so in-flight pushes are never interrupted.
 
@@ -103,8 +105,9 @@ The **same** list flows to three consumers, which is what keeps them honest:
    hard-coded in the `Dockerfile`; a bare build fails fast);
 2. CI &mdash; matrix and per-build extension list both come from `versions.yaml`;
 3. `test/smoke.sh` &mdash; reads the same list back and asserts each extension
-   is present (`php -m`), the PHP minor matches, `php-fpm -t` passes, and the
-   variant extras work.
+   is present (`php -m`), the PHP minor matches, `php-fpm -t` passes, the CA
+   bundle at both `/etc/ssl` paths matches the `alpine:latest` donor (sha256),
+   and the variant extras work.
 
 If you change the extension list, you change `versions.yaml` and nothing else;
 the smoke test validates the result automatically.
@@ -143,8 +146,28 @@ rediscover them:
   compile path is validated on amd64 only and ionCube is amd64-only anyway.
 - The full global extension set builds on both versions &mdash; there is
   currently **no** `extensions_remove` on the legacy entries.
-- Legacy versions are `supported: false`: built on push/dispatch only, never
-  on the weekly schedule.
+- Legacy versions are `supported: false` (informational); like the rest of the
+  lineup they are rebuilt weekly &mdash; the rebuild exists to refresh their
+  CA trust store.
+
+## CA bundle refresh
+
+Both Dockerfiles contain a `FROM alpine:latest AS cacerts` donor stage; the
+`base` stage replaces **both** Alpine bundle locations with the donor's
+current bundle:
+
+- `/etc/ssl/certs/ca-certificates.crt` (curl and most tools)
+- `/etc/ssl/cert.pem` (openssl/LibreSSL default; **this** is what PHP's
+  openssl streams read &mdash; verified via `openssl_get_cert_locations()`).
+  On modern bases it is a symlink, on the frozen ones a stale divergent copy;
+  the refresh `rm`s it and writes a real file in both cases.
+
+Why: the frozen EOL bases (5.6/7.0 especially) carry 2018/2019 trust stores
+that predate the ISRG root rotations. The weekly whole-lineup rebuild plus
+`pull: true` on the build steps (re-resolves `alpine:latest`) keeps the
+bundle current in every tag; `test/smoke.sh` enforces it by comparing sha256
+of both paths against the same donor. Honest limit: roots only &mdash; the
+frozen LibreSSL stack itself stays old (no TLS 1.3 on 5.6/7.0).
 
 ## Common tasks
 
@@ -179,6 +202,9 @@ back to the `mikefarah/yq` container when `yq` is absent):
   both frozen bases (newer loaders segfault).
 - **Every pushed image is smoke-tested first.** Never add a push path that
   bypasses `test/smoke.sh`.
+- Every image carries the **current CA bundle at both** `/etc/ssl` locations
+  (donor stage + smoke check). Do not drop the donor stage or the weekly
+  full-lineup rebuild that keeps it fresh.
 - PRs must stay build-only and secret-free (fork-safe).
 - **LF line endings** everywhere (enforced by `.gitattributes`); the shell
   scripts must stay executable.

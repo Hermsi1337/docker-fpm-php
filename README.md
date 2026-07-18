@@ -48,8 +48,10 @@ Images are published to two registries:
 > everything below it no longer receives upstream security fixes, and the
 > underlying `php:<x.y>-fpm-alpine` base images are frozen. These tags are
 > provided for legacy workloads **with no security guarantees** &mdash; do not
-> ship them to production. Only the supported versions (PHP 8.2+) are rebuilt
-> weekly to pick up Alpine package updates.
+> ship them to production. The whole lineup is rebuilt weekly: supported
+> versions (PHP 8.2+) pick up Alpine package updates, EOL versions at least
+> get a current CA trust store (see [CA bundle
+> freshness](#ca-bundle-freshness)).
 >
 > **PHP 7.0 and 5.6 are museum pieces.** Their base images (7.0.33 on Alpine
 > 3.7, 5.6.40 on Alpine 3.8) have been frozen since **January 2019** &mdash;
@@ -187,6 +189,32 @@ Run it locally against an image you built:
 
 Like `build-local.sh`, it uses a local `yq` when available and otherwise the
 `mikefarah/yq` container.
+
+## CA bundle freshness
+
+The EOL base images are frozen &mdash; and so are their CA trust stores. The
+PHP 5.6 base, for example, ships root certificates from 2018/2019, which
+predate the ISRG (Let's Encrypt) root rotations: HTTPS calls from PHP against
+much of today's web would fail on trust errors alone.
+
+Every image therefore copies the **current CA bundle** out of an
+`alpine:latest` donor stage at build time, into **both** locations Alpine
+uses:
+
+- `/etc/ssl/certs/ca-certificates.crt` &mdash; read by curl and most CLI tools
+- `/etc/ssl/cert.pem` &mdash; the openssl/LibreSSL default that PHP's
+  `openssl` streams actually read (on the frozen bases these two files were
+  stale *and* different from each other)
+
+The weekly rebuild of the whole lineup refreshes this bundle in every tag, and
+`test/smoke.sh` asserts (by sha256, against the same donor) that both paths in
+every built image match &mdash; images with a stale store never get pushed.
+
+**Honest limit:** this refreshes the *trusted roots* only. The TLS stack
+itself (LibreSSL on the frozen bases) stays as old as the base image &mdash;
+no TLS 1.3 on PHP 5.6/7.0, old cipher suites, and none of the OpenSSL fixes
+from after the freeze. A current trust store makes those images usable, not
+secure.
 
 ## Migrating from the old tag scheme
 
