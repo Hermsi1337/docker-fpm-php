@@ -1,0 +1,146 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # Weekly rebuild of the supported (PHP 8.2+) versions only. EOL versions
+    # sit on frozen base images, so there is nothing to gain from rebuilding
+    # them on a schedule - they build on push / workflow_dispatch instead.
+    - cron: "0 4 * * 1"
+
+# Cancel superseded runs for the same PR; let push/dispatch/schedule runs
+# finish so in-flight image pushes are never interrupted.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  DOCKERHUB_IMAGE: hermsi/alpine-fpm-php
+  GHCR_IMAGE: ghcr.io/hermsi1337/fpm-php
+
+jobs:
+  prepare:
+    name: Compute build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set
+        name: Build matrix from versions.json
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          # On a schedule, only rebuild supported versions. Every other trigger
+          # builds the whole lineup. Each PHP version expands into the standard
+          # and composer variants (multi-arch) plus, where a loader exists, an
+          # amd64-only ioncube variant.
+          matrix=$(jq -c --arg event "$EVENT_NAME" '
+            {
+              include: (
+                [ .versions[] | select($event != "schedule" or .supported == true) ]
+                | map(
+                    . as $v
+                    | [ { php: $v.php, variant: "standard", platforms: $v.platforms, latest: $v.latest },
+                        { php: $v.php, variant: "composer", platforms: $v.platforms, latest: $v.latest } ]
+                      + ( if $v.ioncube
+                          then [ { php: $v.php, variant: "ioncube", platforms: "linux/amd64", latest: $v.latest } ]
+                          else [] end )
+                  )
+                | add // []
+              )
+            }' versions.json)
+          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+          echo "${matrix}" | jq .
+
+  build:
+    name: "PHP ${{ matrix.php }} (${{ matrix.variant }})"
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      # One broken (usually EOL) build must not abort the rest of the lineup.
+      fail-fast: false
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: tags
+        name: Compute image tags
+        env:
+          PHP: ${{ matrix.php }}
+          VARIANT: ${{ matrix.variant }}
+          LATEST: ${{ matrix.latest }}
+        run: |
+          set -euo pipefail
+          case "$VARIANT" in
+            standard) suffix="" ;;
+            *)        suffix="-${VARIANT}" ;;
+          esac
+          {
+            echo "raw<<EOF"
+            echo "type=raw,value=${PHP}${suffix}"
+            if [ "$LATEST" = "true" ]; then
+              echo "type=raw,value=latest${suffix}"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - id: meta
+        name: Extract metadata
+        uses: docker/metadata-action@v6
+        with:
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
+          tags: ${{ steps.tags.outputs.raw }}
+          flavor: |
+            latest=false
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          target: ${{ matrix.variant }}
+          platforms: ${{ matrix.platforms }}
+          build-args: |
+            PHP_VERSION=${{ matrix.php }}
+          push: ${{ github.event_name != 'pull_request' }}
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.php }}-${{ matrix.variant }}
