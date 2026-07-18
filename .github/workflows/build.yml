@@ -43,15 +43,18 @@ jobs:
           # On a schedule, only rebuild supported versions. Every other trigger
           # builds the whole lineup. Each PHP version expands into the standard
           # and composer variants (multi-arch) plus, where a loader exists, an
-          # amd64-only ioncube variant.
+          # amd64-only ioncube variant. On pull requests we build amd64 only -
+          # it is a build-only validation, so there is no need to pay for arm64
+          # emulation across the whole matrix.
           matrix=$(jq -c --arg event "$EVENT_NAME" '
             {
               include: (
                 [ .versions[] | select($event != "schedule" or .supported == true) ]
                 | map(
                     . as $v
-                    | [ { php: $v.php, variant: "standard", platforms: $v.platforms, latest: $v.latest },
-                        { php: $v.php, variant: "composer", platforms: $v.platforms, latest: $v.latest } ]
+                    | ( if $event == "pull_request" then "linux/amd64" else $v.platforms end ) as $plat
+                    | [ { php: $v.php, variant: "standard", platforms: $plat, latest: $v.latest },
+                        { php: $v.php, variant: "composer", platforms: $plat, latest: $v.latest } ]
                       + ( if $v.ioncube
                           then [ { php: $v.php, variant: "ioncube", platforms: "linux/amd64", latest: $v.latest } ]
                           else [] end )
