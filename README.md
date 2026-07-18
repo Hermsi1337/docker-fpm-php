@@ -14,7 +14,9 @@ The whole lineup is produced from **one parameterised
 [`Dockerfile`](./Dockerfile)** and a maintained
 [`versions.yaml`](./versions.yaml). Extensions are installed with
 [`mlocati/docker-php-extension-installer`](https://github.com/mlocati/docker-php-extension-installer)
-instead of being hand-compiled.
+instead of being hand-compiled. The two museum pieces, PHP 5.6 and 7.0, are
+the exception: the installer needs PHP 7.1+ on Alpine, so they build from
+[`Dockerfile.legacy`](./Dockerfile.legacy) with hard-pinned PECL releases.
 
 ## Images
 
@@ -39,6 +41,8 @@ Images are published to two registries:
 | `7.3` | `amd64`,`arm64` | `amd64`,`arm64` | `amd64`    | EOL &mdash; best-effort |
 | `7.2` | `amd64`,`arm64` | `amd64`,`arm64` | `amd64`    | EOL &mdash; best-effort |
 | `7.1` | `amd64`,`arm64` | `amd64`,`arm64` | `amd64`    | EOL &mdash; best-effort |
+| `7.0` | `amd64`         | `amd64`         | `amd64`    | EOL &mdash; legacy build |
+| `5.6` | `amd64`         | `amd64`         | `amd64`    | EOL &mdash; legacy build |
 
 > **EOL versions are built best-effort on frozen base images.** PHP 8.1 and
 > everything below it no longer receives upstream security fixes, and the
@@ -47,8 +51,17 @@ Images are published to two registries:
 > ship them to production. Only the supported versions (PHP 8.2+) are rebuilt
 > weekly to pick up Alpine package updates.
 >
+> **PHP 7.0 and 5.6 are museum pieces.** Their base images (7.0.33 on Alpine
+> 3.7, 5.6.40 on Alpine 3.8) have been frozen since **January 2019** &mdash;
+> that is years of unpatched OS packages, OpenSSL/LibreSSL and PHP CVEs baked
+> in forever. They exist purely to keep ancient legacy workloads running,
+> are `amd64`-only, and are built from a separate
+> [`Dockerfile.legacy`](./Dockerfile.legacy) with hard-pinned PECL releases
+> (the extension installer requires PHP 7.1+).
+>
 > `ioncube` has no loader for PHP 8.0, so that variant is skipped there. The
-> `ioncube` variant is `amd64`-only.
+> `ioncube` variant is `amd64`-only. On 5.6/7.0 it ships loader **13.3.1**
+> &mdash; the newest release that still runs on those frozen bases.
 
 ## Tags
 
@@ -102,6 +115,7 @@ the `PHP_EXTENSIONS` build-arg (a bare `docker build` fails fast with a hint).
 ./build-local.sh 8.4 composer             # composer variant
 ./build-local.sh 8.4 ioncube              # ioncube variant
 ./build-local.sh 8.4 standard linux/arm64 # cross-build (needs QEMU/binfmt)
+./build-local.sh 5.6                      # legacy versions work the same way
 ```
 
 It needs `bash`, `docker`, `jq` and `yq`. If `yq` is not installed it falls
@@ -147,6 +161,10 @@ That single source feeds three consumers, so they can never drift apart:
 3. the **smoke test** &mdash; [`test/smoke.sh`](./test/smoke.sh) reads the same
    list back and asserts every extension is actually present in the built image.
 
+The legacy `Dockerfile.legacy` (PHP 5.6/7.0) necessarily hard-codes its
+build recipe; it therefore asserts at build time that the recipe matches the
+list rendered from `versions.yaml` and fails fast if the two ever drift.
+
 Every image built in CI is smoke-tested **before** it is pushed. For multi-arch
 versions both the `amd64` and the (QEMU-emulated) `arm64` image are built,
 loaded and tested first; only then is the multi-arch image pushed.
@@ -184,8 +202,10 @@ existing users:
 - **ionCube moved to its own `-ioncube` variant.** It is no longer enabled in
   the standard image on any version (previously it was inconsistently baked
   into some 7.x images).
-- **PHP 5.6 and 7.0 were dropped** &mdash; the extension installer requires PHP
-  7.1+ on Alpine.
+- **PHP 5.6 and 7.0 are back, via a legacy build path** &mdash; the extension
+  installer requires PHP 7.1+ on Alpine, so these two build from
+  [`Dockerfile.legacy`](./Dockerfile.legacy) (`amd64`-only, frozen 2019 bases,
+  pinned PECL releases; see the lineup warning above).
 - **`mcrypt` was dropped** (removed from PHP core since 7.2).
 - **`ssh2` is now available on every version** (it used to be limited to the
   older releases).
