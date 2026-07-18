@@ -1,0 +1,193 @@
+# syntax=docker/dockerfile:1
+#
+# Legacy build path for PHP 5.6 and 7.0.
+#
+# mlocati/docker-php-extension-installer requires PHP 7.1+ on Alpine, so these
+# two versions are built the classic way: docker-php-ext-install for the core
+# extensions plus hard-pinned PECL tarballs for the rest. The base images
+# (php:5.6-fpm-alpine = 5.6.40 on Alpine 3.8, php:7.0-fpm-alpine = 7.0.33 on
+# Alpine 3.7) have been frozen since January 2019 - the minor tags are digest-
+# identical with the final patch tags 5.6.40 / 7.0.33.
+#
+# The PECL tarballs are fetched by BuildKit (modern TLS stack) into a separate
+# sources stage and checksum-pinned; the ancient base images never talk to
+# pecl.php.net themselves. Same idea for the ionCube loader archive.
+#
+#   ./build-local.sh 5.6 standard      # reads args from versions.yaml
+#   ./build-local.sh 7.0 composer
+#
+# Targets mirror ./Dockerfile: standard / composer / ioncube.
+
+ARG PHP_VERSION=7.0
+
+########################################################################
+# sources: checksum-pinned PECL tarballs, laid out per PHP version.
+# Last releases that support the respective PHP line (see pecl.php.net):
+#   PHP 5.6: apcu 4.0.11, imagick 3.4.4, memcached 2.2.0, redis 4.3.0,
+#            ssh2 0.13
+#   PHP 7.0: apcu 5.1.21, imagick 3.4.4, memcached 3.1.5, redis 5.3.7,
+#            ssh2 1.4.1
+########################################################################
+FROM scratch AS sources
+
+ADD --checksum=sha256:454f302ec13a6047ca4c39e081217ce5a61bbea815aec9c1091fb849e70b4d00 https://pecl.php.net/get/apcu-4.0.11.tgz /5.6/
+ADD --checksum=sha256:8dd5aa16465c218651fc8993e1faecd982e6a597870fd4b937e9ece02d567077 https://pecl.php.net/get/imagick-3.4.4.tgz /5.6/
+ADD --checksum=sha256:17b9600f6d4c807f23a3f5c45fcd8775ca2e61d6eda70370af2bef4c6e159f58 https://pecl.php.net/get/memcached-2.2.0.tgz /5.6/
+ADD --checksum=sha256:c0f04cec349960a842b60920fb8a433656e2e494eaed6e663397d67102a51ba2 https://pecl.php.net/get/redis-4.3.0.tgz /5.6/
+ADD --checksum=sha256:cb2cb8ab840b5b36bcd8a8df06ea4a970a61e4cb3980f3c0ac5c913522e6c1be https://pecl.php.net/get/ssh2-0.13.tgz /5.6/
+
+ADD --checksum=sha256:1033530448696ee7cadec85050f6df5135fb1330072ef2a74569392acfecfbc1 https://pecl.php.net/get/apcu-5.1.21.tgz /7.0/
+ADD --checksum=sha256:8dd5aa16465c218651fc8993e1faecd982e6a597870fd4b937e9ece02d567077 https://pecl.php.net/get/imagick-3.4.4.tgz /7.0/
+ADD --checksum=sha256:b288e45f839593e16c4d8508b241de51a86df4f7322153e6becb9e1c819021fd https://pecl.php.net/get/memcached-3.1.5.tgz /7.0/
+ADD --checksum=sha256:b958166ccda4f40bd17c6998f9e2239021ae644467cd8ad5c15def420aad65b0 https://pecl.php.net/get/redis-5.3.7.tgz /7.0/
+ADD --checksum=sha256:7bca5b23f731db9d8ed0aea5db9bb15da8ff133b0fbba96102b82e95da4d8764 https://pecl.php.net/get/ssh2-1.4.1.tgz /7.0/
+
+########################################################################
+# ioncube-dl: fetch + unpack the loader archive on a modern Alpine so the
+# frozen base image needs no TLS.
+#
+# Pinned to loader 13.3.1: the CURRENT rolling archive still ships 5.6/7.0
+# loader binaries, but they segfault on these frozen musl bases (verified
+# 2026-07: current and 14.4.1 crash, 13.3.1 / 13.0.2 / 12.0.5 / 10.4.5 work).
+# 13.3.1 is the newest working release; the versioned URL is immutable, so it
+# is checksum-pinned.
+########################################################################
+FROM alpine:3.20 AS ioncube-dl
+
+ADD --checksum=sha256:d4a7cc35e2cd43a30578faac3c23d7920250db2f39badfc6e82de33a8db9e925 \
+    https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_13.3.1.tar.gz /tmp/ioncube.tar.gz
+RUN mkdir -p /out && tar -xzf /tmp/ioncube.tar.gz -C /out
+
+########################################################################
+# base: all bundled extensions and recommended config
+########################################################################
+FROM php:${PHP_VERSION}-fpm-alpine AS base
+
+LABEL maintainer="https://github.com/hermsi1337"
+LABEL org.opencontainers.image.title="alpine-fpm-php"
+LABEL org.opencontainers.image.description="Batteries-included PHP-FPM on Alpine"
+LABEL org.opencontainers.image.source="https://github.com/Hermsi1337/docker-fpm-php"
+LABEL org.opencontainers.image.licenses="MIT"
+
+ARG PHP_VERSION
+ARG PHP_EXTENSIONS
+
+# This legacy recipe necessarily hard-codes its build steps, so guard against
+# silent drift: the list rendered from versions.yaml (the source of truth)
+# must match exactly what the recipe below installs, or the build fails here.
+RUN set -eux; \
+    if [ -z "${PHP_EXTENSIONS:-}" ]; then \
+        echo "ERROR: PHP_EXTENSIONS build-arg is empty." >&2; \
+        echo "       Pass --build-arg PHP_EXTENSIONS=\"...\"; see versions.yaml / build-local.sh." >&2; \
+        exit 1; \
+    fi; \
+    baked="apcu bcmath exif gd gmp imagick intl memcached mysqli opcache pdo_mysql pdo_pgsql redis soap ssh2 xsl zip"; \
+    want="$(printf '%s\n' ${PHP_EXTENSIONS} | sort | tr '\n' ' ')"; \
+    have="$(printf '%s\n' ${baked} | sort | tr '\n' ' ')"; \
+    if [ "${want}" != "${have}" ]; then \
+        echo "ERROR: PHP_EXTENSIONS from versions.yaml does not match the pinned legacy recipe." >&2; \
+        echo "       versions.yaml: ${want}" >&2; \
+        echo "       Dockerfile.legacy: ${have}" >&2; \
+        echo "       Update the recipe in Dockerfile.legacy (or versions.yaml) so both agree." >&2; \
+        exit 1; \
+    fi
+
+# Core extensions via docker-php-ext-install, PECL extensions from the pinned
+# tarballs in the sources stage (bind-mounted; no layer cost, no network).
+RUN --mount=type=bind,from=sources,source=/${PHP_VERSION},target=/tmp/pecl \
+    set -eux; \
+    apk add --no-cache \
+        tini \
+        freetype \
+        libjpeg-turbo \
+        libpng \
+        gmp \
+        icu-libs \
+        libintl \
+        libxslt \
+        libmemcached-libs \
+        imagemagick \
+        libssh2 \
+        postgresql-libs; \
+    apk add --no-cache --virtual .build-deps \
+        $PHPIZE_DEPS \
+        freetype-dev \
+        libjpeg-turbo-dev \
+        libpng-dev \
+        gmp-dev \
+        icu-dev \
+        libxml2-dev \
+        libxslt-dev \
+        libmemcached-dev \
+        cyrus-sasl-dev \
+        zlib-dev \
+        imagemagick-dev \
+        libssh2-dev \
+        postgresql-dev; \
+    docker-php-ext-configure gd \
+        --with-freetype-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/; \
+    docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" \
+        bcmath \
+        exif \
+        gd \
+        gmp \
+        intl \
+        mysqli \
+        opcache \
+        pdo_mysql \
+        pdo_pgsql \
+        soap \
+        xsl \
+        zip; \
+    for tarball in /tmp/pecl/*.tgz; do \
+        yes '' | pecl install "${tarball}"; \
+    done; \
+    docker-php-ext-enable apcu imagick memcached redis ssh2; \
+    apk del .build-deps; \
+    rm -rf /tmp/pear /root/.pearrc; \
+    if php -m 2>&1 | grep -qi 'warning'; then \
+        echo "ERROR: php -m reports module load warnings (missing runtime lib?)" >&2; \
+        php -m >&2; \
+        exit 1; \
+    fi
+
+# Recommended php.ini snippets (opcache, apcu, expose_php=Off) - same set as
+# the main Dockerfile.
+COPY conf.d/ /usr/local/etc/php/conf.d/
+
+CMD ["php-fpm"]
+
+########################################################################
+# composer: base + Composer 2.2 LTS (the last line supporting PHP 5.3.2+),
+# checksum-pinned phar from getcomposer.org
+########################################################################
+FROM base AS composer
+
+ADD --chmod=0755 --checksum=sha256:f38623ebdeeab5905b24b048fd32804150e598436cc43db9fc12362894c1279d \
+    https://getcomposer.org/download/2.2.29/composer.phar /usr/local/bin/composer
+RUN set -eux; \
+    composer --version
+
+########################################################################
+# ioncube: base + ionCube loader (x86_64 only), pinned to loader 13.3.1 -
+# the newest release whose 5.6/7.0 binaries still run on these frozen bases
+# (see the ioncube-dl stage above).
+########################################################################
+FROM base AS ioncube
+
+ARG PHP_VERSION
+
+RUN --mount=type=bind,from=ioncube-dl,source=/out/ioncube,target=/tmp/ioncube \
+    set -eux; \
+    ext_dir="$(php -r 'echo ini_get("extension_dir");')"; \
+    cp "/tmp/ioncube/ioncube_loader_lin_${PHP_VERSION}.so" "${ext_dir}/"; \
+    echo "zend_extension=${ext_dir}/ioncube_loader_lin_${PHP_VERSION}.so" \
+        > /usr/local/etc/php/conf.d/00-ioncube.ini; \
+    php -v | grep -qi ioncube
+
+########################################################################
+# standard: default target, identical to base (kept last so a plain
+# `docker build` with no --target yields the batteries-included image)
+########################################################################
+FROM base AS standard

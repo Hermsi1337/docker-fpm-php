@@ -65,6 +65,13 @@ if [ -z "$extensions" ]; then
   exit 1
 fi
 
+# Which Dockerfile? Versions marked `dockerfile: legacy` (PHP 5.6 / 7.0) build
+# from Dockerfile.legacy, everything else from ./Dockerfile.
+dockerfile="$(printf '%s' "$json" | jq -r --arg php "$php" '
+  ( [ .versions[] | select(.php == $php) ][0].dockerfile // "" )
+  | if . == "legacy" then "Dockerfile.legacy" else "Dockerfile" end
+' | tr -d '\r')"
+
 if [ -z "$tag" ]; then
   if [ "$variant" = "standard" ]; then
     tag="fpm-php:${php}"
@@ -74,12 +81,13 @@ if [ -z "$tag" ]; then
 fi
 
 echo "Building ${tag}"
-echo "  php=${php} variant=${variant} platform=${platform}"
+echo "  php=${php} variant=${variant} platform=${platform} dockerfile=${dockerfile}"
 echo "  extensions=${extensions}"
 
 docker build \
   --platform "$platform" \
   --target "$variant" \
+  --file "${here}/${dockerfile}" \
   --build-arg "PHP_VERSION=${php}" \
   --build-arg "PHP_EXTENSIONS=${extensions}" \
   --load \

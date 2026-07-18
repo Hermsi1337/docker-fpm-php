@@ -53,10 +53,11 @@ jobs:
                 | map(
                     . as $v
                     | ( if $event == "pull_request" then "linux/amd64" else $v.platforms end ) as $plat
-                    | [ { php: $v.php, variant: "standard", platforms: $plat, latest: $v.latest },
-                        { php: $v.php, variant: "composer", platforms: $plat, latest: $v.latest } ]
+                    | ( if ($v.dockerfile // "") == "legacy" then "Dockerfile.legacy" else "Dockerfile" end ) as $df
+                    | [ { php: $v.php, variant: "standard", platforms: $plat, latest: $v.latest, dockerfile: $df },
+                        { php: $v.php, variant: "composer", platforms: $plat, latest: $v.latest, dockerfile: $df } ]
                       + ( if $v.ioncube
-                          then [ { php: $v.php, variant: "ioncube", platforms: "linux/amd64", latest: $v.latest } ]
+                          then [ { php: $v.php, variant: "ioncube", platforms: "linux/amd64", latest: $v.latest, dockerfile: $df } ]
                           else [] end )
                   )
                 | add // []
@@ -133,7 +134,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./Dockerfile
+          file: ./${{ matrix.dockerfile }}
           target: ${{ matrix.variant }}
           platforms: linux/amd64
           build-args: |
@@ -157,7 +158,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./Dockerfile
+          file: ./${{ matrix.dockerfile }}
           target: ${{ matrix.variant }}
           platforms: linux/arm64
           build-args: |
@@ -215,7 +216,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: ./Dockerfile
+          file: ./${{ matrix.dockerfile }}
           target: ${{ matrix.variant }}
           platforms: ${{ matrix.platforms }}
           build-args: |

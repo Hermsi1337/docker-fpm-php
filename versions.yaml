@@ -10,8 +10,10 @@
 #   * The extension list is rendered into the Dockerfile through the
 #     PHP_EXTENSIONS build-arg -- it is deliberately never hard-coded there.
 #
-# PHP 5.6 and 7.0 are intentionally absent: mlocati/docker-php-extension-installer
-# requires PHP 7.1+ on Alpine, so older base images cannot be built here.
+# PHP 5.6 and 7.0 cannot use mlocati/docker-php-extension-installer (it
+# requires PHP 7.1+ on Alpine); they are built through Dockerfile.legacy
+# instead (marked with `dockerfile: legacy` below): classic
+# docker-php-ext-install plus hard-pinned PECL tarballs.
 
 # ---------------------------------------------------------------------------
 # Global batteries-included extension set (installed on every version/variant).
@@ -47,6 +49,8 @@ extensions:
 #              false -> EOL, built best-effort on frozen base images; no
 #                       security guarantees.
 #   latest     newest GA release; additionally gets the unsuffixed :latest tags.
+#   dockerfile "legacy" -> built from Dockerfile.legacy (PHP 5.6 / 7.0, where
+#              the extension installer cannot run). Absent -> ./Dockerfile.
 # Optional per-version extensions_add / extensions_remove tailor the effective
 # extension set for a single version.
 # ---------------------------------------------------------------------------
@@ -105,3 +109,23 @@ versions:
     ioncube: true
     supported: false
     latest: false
+  # PHP 7.0 / 5.6: legacy path (Dockerfile.legacy). Bases frozen since Jan
+  # 2019 (7.0.33 on Alpine 3.7, 5.6.40 on Alpine 3.8; the minor tags are
+  # digest-identical with those final patch tags). amd64 only: the base
+  # manifests do publish arm64/v8, but the legacy compile path is validated
+  # on amd64 only. The full global extension set builds on both versions
+  # (pinned PECL releases), so no extensions_remove is needed. ioncube: true
+  # works via loader 13.3.1 - newer loader builds (14.x+, incl. the current
+  # rolling archive) segfault on these frozen musl bases (verified 2026-07).
+  - php: "7.0"
+    platforms: linux/amd64
+    ioncube: true
+    supported: false
+    latest: false
+    dockerfile: legacy
+  - php: "5.6"
+    platforms: linux/amd64
+    ioncube: true
+    supported: false
+    latest: false
+    dockerfile: legacy
