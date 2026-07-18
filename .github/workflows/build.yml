@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - id: set
-        name: Build matrix from versions.json
+        name: Build matrix from versions.yaml
         env:
           EVENT_NAME: ${{ github.event_name }}
         run: |
@@ -46,7 +46,7 @@ jobs:
           # amd64-only ioncube variant. On pull requests we build amd64 only -
           # it is a build-only validation, so there is no need to pay for arm64
           # emulation across the whole matrix.
-          matrix=$(jq -c --arg event "$EVENT_NAME" '
+          matrix=$(yq -o=json '.' versions.yaml | jq -c --arg event "$EVENT_NAME" '
             {
               include: (
                 [ .versions[] | select($event != "schedule" or .supported == true) ]
@@ -61,7 +61,7 @@ jobs:
                   )
                 | add // []
               )
-            }' versions.json)
+            }')
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
           echo "${matrix}" | jq .
 
@@ -100,6 +100,81 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - id: ext
+        name: Resolve extension list from versions.yaml
+        env:
+          PHP: ${{ matrix.php }}
+        run: |
+          set -euo pipefail
+          # Single source of truth: effective list for this version is
+          # extensions + extensions_add - extensions_remove. The exact same
+          # computation feeds the build-arg and the smoke test below.
+          extensions=$(yq -o=json '.' versions.yaml | jq -r --arg php "$PHP" '
+            ( [ .versions[] | select(.php == $php) ][0] ) as $v
+            | ( ( .extensions + ($v.extensions_add // []) ) - ($v.extensions_remove // []) )
+            | unique
+            | join(" ")
+          ')
+          if [ -z "$extensions" ]; then
+            echo "No extensions resolved for PHP $PHP" >&2
+            exit 1
+          fi
+          echo "list=${extensions}" >> "$GITHUB_OUTPUT"
+          echo "PHP $PHP extensions: ${extensions}"
+
+      - id: names
+        name: Compute local test image name
+        run: echo "image=fpm-php:ci-${{ matrix.php }}-${{ matrix.variant }}" >> "$GITHUB_OUTPUT"
+
+      # amd64: build, load into the runner's docker, and smoke-test. Runs on
+      # every trigger - on pull requests this is the whole story (build-only
+      # validation, nothing is pushed).
+      - name: Build amd64 (load)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          target: ${{ matrix.variant }}
+          platforms: linux/amd64
+          build-args: |
+            PHP_VERSION=${{ matrix.php }}
+            PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          load: true
+          provenance: false
+          tags: ${{ steps.names.outputs.image }}
+          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}-amd64
+          cache-to: type=gha,mode=max,scope=${{ matrix.php }}-${{ matrix.variant }}-amd64
+
+      - name: Smoke test amd64
+        run: |
+          chmod +x test/smoke.sh
+          ./test/smoke.sh "${{ steps.names.outputs.image }}" "${{ matrix.php }}" "${{ matrix.variant }}"
+
+      # arm64: only where the variant targets it (standard/composer). Built with
+      # QEMU emulation, loaded, and smoke-tested via `docker run --platform`.
+      - name: Build arm64 (load)
+        if: contains(matrix.platforms, 'arm64')
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile
+          target: ${{ matrix.variant }}
+          platforms: linux/arm64
+          build-args: |
+            PHP_VERSION=${{ matrix.php }}
+            PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          load: true
+          provenance: false
+          tags: ${{ steps.names.outputs.image }}-arm64
+          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}-arm64
+          cache-to: type=gha,mode=max,scope=${{ matrix.php }}-${{ matrix.variant }}-arm64
+
+      - name: Smoke test arm64
+        if: contains(matrix.platforms, 'arm64')
+        run: |
+          chmod +x test/smoke.sh
+          ./test/smoke.sh "${{ steps.names.outputs.image }}-arm64" "${{ matrix.php }}" "${{ matrix.variant }}" "linux/arm64"
+
       - id: tags
         name: Compute image tags
         env:
@@ -132,7 +207,11 @@ jobs:
           flavor: |
             latest=false
 
+      # Multi-arch build + push. Only on non-PR triggers, and only after the
+      # per-arch smoke tests above have passed. The per-arch layers are already
+      # in the buildx cache, so this final build is a cheap cache assembly.
       - name: Build and push
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -141,9 +220,11 @@ jobs:
           platforms: ${{ matrix.platforms }}
           build-args: |
             PHP_VERSION=${{ matrix.php }}
-          push: ${{ github.event_name != 'pull_request' }}
+            PHP_EXTENSIONS=${{ steps.ext.outputs.list }}
+          push: true
           provenance: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.php }}-${{ matrix.variant }}
+          cache-from: |
+            type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}-amd64
+            type=gha,scope=${{ matrix.php }}-${{ matrix.variant }}-arm64
