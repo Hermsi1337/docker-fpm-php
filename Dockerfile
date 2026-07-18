@@ -27,33 +27,27 @@ LABEL org.opencontainers.image.description="Batteries-included PHP-FPM on Alpine
 LABEL org.opencontainers.image.source="https://github.com/Hermsi1337/docker-fpm-php"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Batteries-included extension set. Mirrors the historically shipped modules.
-# Override at build time with --build-arg PHP_EXTENSIONS="..." if needed.
-ARG PHP_EXTENSIONS="\
-    apcu \
-    bcmath \
-    exif \
-    gd \
-    gmp \
-    imagick \
-    intl \
-    memcached \
-    mysqli \
-    opcache \
-    pdo_mysql \
-    pdo_pgsql \
-    redis \
-    soap \
-    ssh2 \
-    xsl \
-    zip"
+# The batteries-included extension set is NOT hard-coded here. It lives in
+# versions.yaml (the single source of truth) and is rendered in via the
+# PHP_EXTENSIONS build-arg by build-local.sh and the CI workflow. There is
+# deliberately no default value: a bare build must not silently produce an
+# image without extensions.
+ARG PHP_EXTENSIONS
+
+# Fail fast with a clear message when the extension list was not supplied.
+RUN set -eux; \
+    if [ -z "${PHP_EXTENSIONS:-}" ]; then \
+        echo "ERROR: PHP_EXTENSIONS build-arg is empty." >&2; \
+        echo "       Pass --build-arg PHP_EXTENSIONS=\"...\"; see versions.yaml / build-local.sh." >&2; \
+        exit 1; \
+    fi
 
 # tini is kept available for users who wire it up as an init process.
 RUN set -eux; \
     apk add --no-cache tini
 
 # Pull in the extension installer (pinned to its latest published release) and
-# install the batteries-included set in a single, dependency-aware pass.
+# install the requested set in a single, dependency-aware pass.
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 RUN set -eux; \
     chmod +x /usr/local/bin/install-php-extensions; \

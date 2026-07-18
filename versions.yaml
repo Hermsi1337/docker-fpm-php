@@ -1,0 +1,107 @@
+# Single source of truth for BOTH the CI build matrix and the bundled PHP
+# extension set.
+#
+# How it is consumed:
+#   * .github/workflows/build.yml converts this file to JSON with `yq` and
+#     derives the build matrix from it.
+#   * build-local.sh and test/smoke.sh read it (via yq, with a
+#     `docker run --rm mikefarah/yq` fallback) to build images locally and to
+#     assert that every expected extension is actually present in the image.
+#   * The extension list is rendered into the Dockerfile through the
+#     PHP_EXTENSIONS build-arg -- it is deliberately never hard-coded there.
+#
+# PHP 5.6 and 7.0 are intentionally absent: mlocati/docker-php-extension-installer
+# requires PHP 7.1+ on Alpine, so older base images cannot be built here.
+
+# ---------------------------------------------------------------------------
+# Global batteries-included extension set (installed on every version/variant).
+# Effective list for a version = extensions + extensions_add - extensions_remove.
+# ---------------------------------------------------------------------------
+extensions:
+  - apcu
+  - bcmath
+  - exif
+  - gd
+  - gmp
+  - imagick
+  - intl
+  - memcached
+  - mysqli
+  - opcache
+  - pdo_mysql
+  - pdo_pgsql
+  - redis
+  - soap
+  - ssh2
+  - xsl
+  - zip
+
+# ---------------------------------------------------------------------------
+# Maintained lineup driving the build matrix. Keys per entry:
+#   php        PHP minor, quoted so YAML keeps it a string ("8.0", not 8).
+#   platforms  multi-arch target for the standard/composer variants; the
+#              ioncube variant is always linux/amd64 only (see below).
+#   ioncube    whether an ionCube loader exists for that PHP version.
+#   supported  true  -> still receiving upstream fixes (PHP 8.2+), rebuilt
+#                       weekly by the schedule trigger.
+#              false -> EOL, built best-effort on frozen base images; no
+#                       security guarantees.
+#   latest     newest GA release; additionally gets the unsuffixed :latest tags.
+# Optional per-version extensions_add / extensions_remove tailor the effective
+# extension set for a single version.
+# ---------------------------------------------------------------------------
+versions:
+  - php: "8.5"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: true
+    latest: true
+  - php: "8.4"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: true
+    latest: false
+  - php: "8.3"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: true
+    latest: false
+  - php: "8.2"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: true
+    latest: false
+  - php: "8.1"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: false
+    latest: false
+  - php: "8.0"
+    platforms: linux/amd64,linux/arm64
+    ioncube: false          # no ionCube loader is published for PHP 8.0
+    supported: false
+    latest: false
+  - php: "7.4"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: false
+    latest: false
+  - php: "7.3"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: false
+    latest: false
+  - php: "7.2"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: false
+    latest: false
+    # Example of the per-version override mechanism, exercised end-to-end by the
+    # CI smoke tests: the legacy 7.2 image additionally bundles `calendar`.
+    extensions_add:
+      - calendar
+  - php: "7.1"
+    platforms: linux/amd64,linux/arm64
+    ioncube: true
+    supported: false
+    latest: false
