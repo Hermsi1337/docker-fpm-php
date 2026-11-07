@@ -85,7 +85,8 @@ Secrets / permissions:
 
 - `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` for Docker Hub; `GITHUB_TOKEN`
   (built-in) for GHCR. Logins are gated on `github.event_name != 'pull_request'`.
-- Job permissions: `contents: read`, `packages: write` (GHCR).
+- Job permissions: `build` has `contents: read`, `packages: write` (GHCR);
+  `keepalive` has `actions: write` only.
 
 ## Extension maintenance (the important bit)
 
