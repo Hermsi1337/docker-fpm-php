@@ -68,6 +68,21 @@ jobs:
           echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
           echo "${matrix}" | jq .
 
+  # GitHub disables scheduled workflows after 60 days without repository
+  # activity, which silently stopped the weekly security rebuilds (#24).
+  # Re-enabling the already enabled workflow resets that inactivity timer.
+  keepalive:
+    name: Keep schedule alive
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Reset inactivity timer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/build.yml/enable"
+
   build:
     name: "PHP ${{ matrix.php }} (${{ matrix.variant }})"
     needs: prepare

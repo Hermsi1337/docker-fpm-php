@@ -45,7 +45,7 @@ rename or drop them casually:
 
 ## CI/CD (`.github/workflows/build.yml`)
 
-Two jobs:
+Three jobs:
 
 1. **`prepare`** &mdash; converts `versions.yaml` to JSON with `yq -o=json` and
    builds the matrix with `jq`. Each PHP version expands into `standard` +
@@ -60,6 +60,11 @@ Two jobs:
    - **only after** the per-arch smoke tests pass, build the multi-arch image
      and push it (reusing the per-arch buildx caches, so the push build is
      cheap).
+3. **`keepalive`** &mdash; schedule runs only. Calls the workflow `enable`
+   API, which resets GitHub's 60-day inactivity timer. Without it GitHub
+   disables the schedule on a quiet repo and the weekly security rebuilds
+   silently stop (happened Sept&ndash;Nov 2026, issue #24). Needs
+   `actions: write`.
 
 Trigger behaviour:
 
@@ -80,7 +85,8 @@ Secrets / permissions:
 
 - `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` for Docker Hub; `GITHUB_TOKEN`
   (built-in) for GHCR. Logins are gated on `github.event_name != 'pull_request'`.
-- Job permissions: `contents: read`, `packages: write` (GHCR).
+- Job permissions: `build` has `contents: read`, `packages: write` (GHCR);
+  `keepalive` has `actions: write` only.
 
 ## Extension maintenance (the important bit)
 
